@@ -49,7 +49,11 @@ class Window:
         # Set the window to non-resizable.
         self.root.resizable(False, False)
         # Set up the font.
-        self.font = ("Trebuchet MS", 20)
+        self.font = ("IBM Plex Sans", 20)
+
+    def Button(parent, **kwargs):
+        # Create a button with the default options.
+        return tk.Button(parent, font=("IBM Plex Sans", 20), bg="#2b2b2b", fg="#ffffff", relief="flat", **kwargs)
 
 
 class MainMenuWindow(Window):
@@ -60,24 +64,37 @@ class MainMenuWindow(Window):
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Main Menu", 500, 500)
 
+        # Create the frame to keep everything in the centre.
+        frame = tk.Frame(self.root, bg="#2b2b2b")
+        frame.grid(row=0, column=0)
+
         # Create the logo image.
         logo = tk.PhotoImage(file="logo.png")
-        logo_label = tk.Label(self.root, image=logo)
-        logo_label.pack()
+        logo_label = tk.Label(frame, image=logo, bg="#2b2b2b")
+        # Place it in the grid.
+        logo_label.grid(row=0, column=0, padx=20, pady=20)
 
         # Create the main menu buttons.
-        btn_play = tk.Button(self.root, text="Play",
-                             font=self.font, command=self.play)
-        btn_highscores = tk.Button(
-            self.root, text="Highscores", font=self.font, command=self.highscores)
-        btn_settings = tk.Button(
-            self.root, text="Settings", font=self.font, command=self.settings)
-        btn_quit = tk.Button(self.root, text="Quit",
-                             font=self.font, command=self.quit)
-        btn_play.pack()
-        btn_highscores.pack()
-        btn_settings.pack()
-        btn_quit.pack()
+        btn_play = Window.Button(
+            frame, text="Play", command=self.play, width=25)
+        btn_highscores = Window.Button(
+            frame, text="Highscores", command=self.highscores, width=25)
+        btn_settings = Window.Button(
+            frame, text="Settings", command=self.settings, width=25)
+        btn_quit = Window.Button(
+            frame, text="Quit", command=self.quit, width=25)
+        # Place them in the grid.
+        btn_play.grid(row=1, column=0, padx=10, pady=10)
+        btn_highscores.grid(row=2, column=0, padx=10, pady=10)
+        btn_settings.grid(row=3, column=0, padx=10, pady=10)
+        btn_quit.grid(row=4, column=0, padx=10, pady=10)
+
+        # Configure row/column weights to centre content
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
+        for row in range(0, 5):
+            frame.rowconfigure(row, weight=1)
+        frame.columnconfigure(0, weight=1)
 
         # Keep the window open, waiting for something to happen.
         # This is blocking because we don't need to do anything else.
