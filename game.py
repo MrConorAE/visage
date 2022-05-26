@@ -136,4 +136,6 @@ class ScoreWindow(Window):
 
 
 # RUNNING
-application = Application()
+if __name__ == "__main__":
+    # Run the game.
+    application = Application()
