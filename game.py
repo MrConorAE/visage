@@ -63,7 +63,7 @@ class MainMenuWindow(Window):
     def __init__(self):
         # Open the main menu window.
         # Perform initialisation using the Window parent class.
-        Window.__init__(self, "Main Menu", 500, 500)
+        Window.__init__(self, "Main Menu", 500, 600)
 
         # Create the frame to keep everything in the centre.
         frame = tk.Frame(self.root, bg="#2b2b2b")
@@ -128,36 +128,29 @@ class GameWindow(Window):
         Window.__init__(self, "Play", 500, 500)
 
         # Create the frame for the buttons.
-        self.frame = tk.Frame(self.root, bg="#2b2b2b")
-        self.frame.grid(row=1, column=0, columnspan=3)
+        self.frame = tk.Frame(self.root, bg="#2b2b2b", width=400, height=400)
+        self.frame.grid(row=0, column=0, columnspan=3, sticky="NESW")
 
         # Score label
         self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                    text="Score: 0", font=("IBM Plex Sans", 30))
-        self.score_label.grid(row=0, column=1, padx=20, pady=20)
-
-        # Highscore label
-        self.highscore_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                        text="Score: 0", font=("IBM Plex Sans", 20))
-        self.highscore_label.grid(row=0, column=2, padx=20, pady=20)
+                                    text="Level 3", font=("IBM Plex Sans", 20))
+        self.score_label.grid(row=2, column=1, padx=20, pady=20)
 
         # Help label
         self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
                                    text="Click the odd one out!", font=("IBM Plex Sans", 10))
-        self.help_label.grid(row=2, column=1, padx=20, pady=20)
+        self.help_label.grid(row=2, column=2, padx=20, pady=20)
 
         # Create the main menu buttons.
         btn_quit = Window.Button(
             self.root, text="Quit", command=self.quit)
         # Place them in the grid.
-        btn_quit.grid(row=0, column=0, padx=10, pady=10)
+        btn_quit.grid(row=2, column=0, padx=20, pady=20)
 
         # Configure row/column weights to centre content
-        for row in range(0, 2):
-            self.root.rowconfigure(row, weight=1)
-            self.root.columnconfigure(row, weight=1)
-        for col in range(0, 2):
-            self.root.rowconfigure(col, weight=1)
+        self.root.rowconfigure(0, weight=1, minsize=100)
+        self.root.rowconfigure(0, weight=1)
+        for col in range(0, 3):
             self.root.columnconfigure(col, weight=1)
 
         # Initialise difficulty counter.
@@ -175,11 +168,12 @@ class GameWindow(Window):
         # Generate a new set of color buttons according to difficulty.
         # Reset the frame, clearing the existing buttons:
         self.frame = tk.Frame(self.root, bg="#2b2b2b")
-        self.frame.grid(row=1, column=0, columnspan=3)
+        self.frame.grid(row=0, column=0, columnspan=3)
         self.root.update()
+        self.frame.update()
 
         # Calculate the size the buttons should be:
-        size = round(10 / difficulty)
+        size = round(100 / difficulty)
 
         # Generate the "correct" color.
         original_color = [
@@ -256,6 +250,7 @@ class GameWindow(Window):
             # Different color: correct choice!
             # TODO: Start the next level
             self.difficulty += 1
+            self.score_label["text"] = f"Level {self.difficulty}"
             self.generate_buttons(self.difficulty)
         else:
             # Original color: incorrect.
