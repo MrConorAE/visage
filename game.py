@@ -52,9 +52,9 @@ class Window:
         # Set up the font.
         self.font = ("IBM Plex Sans", 20)
 
-    def Button(parent, **kwargs):
+    def Button(parent, fontsize=20, **kwargs):
         # Create a button with the default options.
-        return tk.Button(parent, font=("IBM Plex Sans", 20), bg="#2b2b2b", fg="#ffffff", relief="flat", **kwargs)
+        return tk.Button(parent, font=("IBM Plex Sans", fontsize), bg="#2b2b2b", fg="#ffffff", relief="flat", **kwargs)
 
 
 class MainMenuWindow(Window):
@@ -127,13 +127,16 @@ class GameWindow(Window):
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Play", 500, 500)
 
+        # Initialise difficulty counter.
+        self.difficulty = 3
+
         # Create the frame for the buttons.
         self.frame = tk.Frame(self.root, bg="#2b2b2b", width=400, height=400)
         self.frame.grid(row=0, column=0, columnspan=3, sticky="NESW")
 
         # Score label
         self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                    text="Level 3", font=("IBM Plex Sans", 20))
+                                    text=f"Level {self.difficulty}", font=("IBM Plex Sans", 20))
         self.score_label.grid(row=2, column=1, padx=20, pady=20)
 
         # Help label
@@ -143,7 +146,7 @@ class GameWindow(Window):
 
         # Create the main menu buttons.
         btn_quit = Window.Button(
-            self.root, text="Quit", command=self.quit)
+            self.root, 10, text="Quit", command=self.quit)
         # Place them in the grid.
         btn_quit.grid(row=2, column=0, padx=20, pady=20)
 
@@ -152,9 +155,6 @@ class GameWindow(Window):
         self.root.rowconfigure(0, weight=1)
         for col in range(0, 3):
             self.root.columnconfigure(col, weight=1)
-
-        # Initialise difficulty counter.
-        self.difficulty = 3
 
         # Generate colors.
         self.generate_buttons(self.difficulty)
