@@ -116,7 +116,8 @@ class MainMenuWindow(Window):
 
     def quit(self):
         # Quit the game.
-        pass
+        # TODO: save state and highscores before exiting.
+        self.root.destroy()
 
 
 class GameWindow(Window):
