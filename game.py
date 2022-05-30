@@ -138,7 +138,7 @@ class GameWindow(Window):
 
         # Help label
         self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                   text="Click the odd one out!", font=("IBM Plex Sans", 10))
+                                   text="Click the odd one out!", font=("IBM Plex Sans", 10), padx=10, pady=10)
         self.help_label.grid(row=2, column=2, padx=20, pady=20)
 
         # Create the main menu buttons.
@@ -166,11 +166,14 @@ class GameWindow(Window):
 
     def generate_buttons(self, difficulty):
         # Generate a new set of color buttons according to difficulty.
+        # Set loading message.
+        self.help_label.configure(
+            text=f"Loading (000/{difficulty**2:03})", bg="#ffffff", fg="#2b2b2b")
+
         # Reset the frame, clearing the existing buttons:
         self.frame = tk.Frame(self.root, bg="#2b2b2b")
         self.frame.grid(row=0, column=0, columnspan=3)
         self.root.update()
-        self.frame.update()
 
         # Calculate the size the buttons should be:
         size = round(100 / difficulty)
@@ -219,7 +222,12 @@ class GameWindow(Window):
         self.diff_btn_row = random.randint(0, difficulty-1)
         self.diff_btn_col = random.randint(0, difficulty-1)
 
-        print("Generation done")
+        print("Colors done")
+
+        # Configure row/column weights for the inner frame:
+        for i in range(0, difficulty):
+            self.frame.rowconfigure(i, weight=1)
+            self.frame.columnconfigure(i, weight=1)
 
         # Generate the buttons:
         for row in range(0, difficulty):
@@ -230,14 +238,17 @@ class GameWindow(Window):
                     color = different_color_str
                 else:
                     color = original_color_str
-                button = tk.Button(self.frame, bg=color, fg="#000000", highlightthickness=0,
-                                   relief="flat", command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
+                button = tk.Button(self.frame, bg=color, fg=color, highlightthickness=0, activebackground=color, activeforeground="#ffffff",
+                                   relief="flat", text="●", font=("IBM Plex Sans", round(100/difficulty)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
                 button.grid(row=row, column=col, padx=1, pady=1)
+                self.help_label.configure(
+                    text=f"Loading ({(row*difficulty)+col:03}/{difficulty**2:03})", bg="#ffffff", fg="#2b2b2b")
+                self.help_label.update()
 
-        # Configure row/column weights for the inner frame:
-        for i in range(0, difficulty):
-            self.frame.rowconfigure(i, weight=1)
-            self.frame.columnconfigure(i, weight=1)
+        print("Buttons done")
+
+        self.help_label.configure(
+            text="Click the odd one out!", bg="#2b2b2b", fg="#ffffff")
 
     def quit(self):
         # Quit the game.
