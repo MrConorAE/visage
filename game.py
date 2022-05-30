@@ -198,7 +198,7 @@ class GameWindow(Window):
 
             # If the result is over 255 or under 0, over/underflow it by wrapping around.
             if (different_color[component_to_change] > 0xFF) or (different_color[component_to_change] < 0x00):
-                different_color[component_to_change] = (
+                different_color[component_to_change] = round(
                     different_color[component_to_change] % 0xFF)
 
             # Convert it to a string for use with Tk.
@@ -232,7 +232,7 @@ class GameWindow(Window):
                     color = original_color_str
                 button = tk.Button(self.frame, bg=color, fg="#000000", highlightthickness=0,
                                    relief="flat", command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
-                button.grid(row=row, column=col, padx=2, pady=2)
+                button.grid(row=row, column=col, padx=1, pady=1)
 
         # Configure row/column weights for the inner frame:
         for i in range(0, difficulty):
