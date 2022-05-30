@@ -43,7 +43,8 @@ class Window:
         # Set the window title.
         self.root.title(f"Visage / {title}")
         # Configure the geometry of the window.
-        self.root.geometry(f"{width}x{height}")
+        if (width or height):
+            self.root.geometry(f"{width}x{height}")
         # Set the visual aspects of the window:
         self.root.configure(bg="#2b2b2b")
         # Set the window to non-resizable.
@@ -102,7 +103,8 @@ class MainMenuWindow(Window):
 
     def play(self):
         # Start the game.
-        pass
+        self.root.destroy()
+        self.game = GameWindow()
 
     def highscores(self):
         # Open the highscores window.
@@ -120,7 +122,145 @@ class MainMenuWindow(Window):
 class GameWindow(Window):
     # This class is the game itself.
     # It contains the game loop, and can call back to Application or Data for the game state.
-    pass
+    def __init__(self):
+        # Open the main menu window.
+        # Perform initialisation using the Window parent class.
+        Window.__init__(self, "Play", 500, 500)
+
+        # Create the frame for the buttons.
+        self.frame = tk.Frame(self.root, bg="#2b2b2b")
+        self.frame.grid(row=1, column=0, columnspan=3)
+
+        # Score label
+        self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
+                                    text="Score: 0", font=("IBM Plex Sans", 30))
+        self.score_label.grid(row=0, column=1, padx=20, pady=20)
+
+        # Highscore label
+        self.highscore_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
+                                        text="Score: 0", font=("IBM Plex Sans", 20))
+        self.highscore_label.grid(row=0, column=2, padx=20, pady=20)
+
+        # Help label
+        self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
+                                   text="Click the odd one out!", font=("IBM Plex Sans", 10))
+        self.help_label.grid(row=2, column=1, padx=20, pady=20)
+
+        # Create the main menu buttons.
+        btn_quit = Window.Button(
+            self.root, text="Quit", command=self.quit)
+        # Place them in the grid.
+        btn_quit.grid(row=0, column=0, padx=10, pady=10)
+
+        # Configure row/column weights to centre content
+        for row in range(0, 2):
+            self.root.rowconfigure(row, weight=1)
+            self.root.columnconfigure(row, weight=1)
+        for col in range(0, 2):
+            self.root.rowconfigure(col, weight=1)
+            self.root.columnconfigure(col, weight=1)
+
+        # Initialise difficulty counter.
+        self.difficulty = 3
+
+        # Generate colors.
+        self.generate_buttons(self.difficulty)
+
+        # Keep the window open, waiting for something to happen.
+        # This is blocking because we don't need to do anything else.
+        # TODO: implement main loop.
+        self.root.mainloop()
+
+    def generate_buttons(self, difficulty):
+        # Generate a new set of color buttons according to difficulty.
+        # Reset the frame, clearing the existing buttons:
+        self.frame = tk.Frame(self.root, bg="#2b2b2b")
+        self.frame.grid(row=1, column=0, columnspan=3)
+        self.root.update()
+
+        # Calculate the size the buttons should be:
+        size = round(10 / difficulty)
+
+        # Generate the "correct" color.
+        original_color = [
+            random.randint(0x00, 0xff), random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
+        # Convert it to a string for use with Tk.
+        original_color_str = f"#{original_color[0]:02X}{original_color[1]:02X}{original_color[2]:02X}"
+
+        # Generate a color.
+        while True:
+            # Generate the "incorrect" color.
+            # Choose which part to change:
+            component_to_change = random.randint(0, 2)
+            # How much to change it by:
+            change_it_by = round(0xFF / difficulty)
+            # Change by pos or neg?
+            add_or_subtract = random.choice([-1, 1])
+
+            different_color = original_color
+            # Generate the new color, using the correct color as a base.
+            different_color[component_to_change] = round(
+                original_color[component_to_change] + (change_it_by * add_or_subtract))
+
+            # If the result is over 255 or under 0, over/underflow it by wrapping around.
+            if (different_color[component_to_change] > 0xFF) or (different_color[component_to_change] < 0x00):
+                different_color[component_to_change] = (
+                    different_color[component_to_change] % 0xFF)
+
+            # Convert it to a string for use with Tk.
+            different_color_str = f"#{different_color[0]:02X}{different_color[1]:02X}{different_color[2]:02X}"
+
+            if (different_color_str == original_color_str):
+                # Identical color, start again.
+                continue
+
+            if len(different_color_str) != 7:
+                # Invalid color, start again.
+                continue
+
+            # Valid color! Break.
+            break
+
+        # Choose which button will be incorrect.
+        self.diff_btn_row = random.randint(0, difficulty-1)
+        self.diff_btn_col = random.randint(0, difficulty-1)
+
+        print("Generation done")
+
+        # Generate the buttons:
+        for row in range(0, difficulty):
+            for col in range(0, difficulty):
+                # Choose the color for this button.
+                # Is this the wrong button?
+                if (row == self.diff_btn_row and col == self.diff_btn_col):
+                    color = different_color_str
+                else:
+                    color = original_color_str
+                button = tk.Button(self.frame, bg=color, fg="#000000", highlightthickness=0,
+                                   relief="flat", command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
+                button.grid(row=row, column=col, padx=2, pady=2)
+
+        # Configure row/column weights for the inner frame:
+        for i in range(0, difficulty):
+            self.frame.rowconfigure(i, weight=1)
+            self.frame.columnconfigure(i, weight=1)
+
+    def quit(self):
+        # Quit the game.
+        # TODO: Save score and reopen main menu.
+        self.root.destroy()
+
+    def check_color(self, row, col):
+        print("Click!")
+        if (row == self.diff_btn_row and col == self.diff_btn_col):
+            # Different color: correct choice!
+            # TODO: Start the next level
+            self.difficulty += 1
+            self.generate_buttons(self.difficulty)
+        else:
+            # Original color: incorrect.
+            # TODO: Alert the user and exit.
+            pass
 
 
 class SettingsWindow(Window):
