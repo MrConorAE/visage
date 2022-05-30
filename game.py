@@ -136,7 +136,7 @@ class GameWindow(Window):
 
         # Score label
         self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                    text=f"Level {self.difficulty}", font=("IBM Plex Sans", 20))
+                                    text=f"Level {self.difficulty}", font=("IBM Plex Sans", 20), padx=10, pady=10)
         self.score_label.grid(row=2, column=1, padx=20, pady=20)
 
         # Help label
@@ -261,12 +261,16 @@ class GameWindow(Window):
             # Different color: correct choice!
             # TODO: Start the next level
             self.difficulty += 1
-            self.score_label["text"] = f"Level {self.difficulty}"
+            self.score_label.configure(
+                text="Correct!", fg="#33d17a")
             self.generate_buttons(self.difficulty)
+            self.score_label.configure(
+                text=f"Level {self.difficulty}", fg="#ffffff", bg="#2b2b2b")
         else:
             # Original color: incorrect.
             # TODO: Alert the user and exit.
-            pass
+            self.score_label.configure(
+                text="Try again...",  fg="#e01b24")
 
 
 class SettingsWindow(Window):
