@@ -129,7 +129,7 @@ class GameWindow(Window):
         Window.__init__(self, "Play", 500, 500)
 
         # Initialise difficulty counter.
-        self.difficulty = 3
+        self.level = 3
 
         # Create the frame for the buttons.
         self.frame = tk.Frame(self.root, bg="#2b2b2b", width=400, height=400)
@@ -137,7 +137,7 @@ class GameWindow(Window):
 
         # Score label
         self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                    text=f"Level {self.difficulty}", font=("IBM Plex Sans", 20), padx=10, pady=10)
+                                    text=f"Level {self.level}", font=("IBM Plex Sans", 20), padx=10, pady=10)
         self.score_label.grid(row=2, column=1, padx=20, pady=20)
 
         # Help label
@@ -157,19 +157,25 @@ class GameWindow(Window):
         for col in range(0, 3):
             self.root.columnconfigure(col, weight=1)
 
+        # Initialise the "busy" variable, which will disable click processing
+        # while false - preventing the user from clicking while buttons are being generated.
+        self.busy = False
+
         # Generate colors.
-        self.generate_buttons(self.difficulty)
+        self.generate_buttons(self.level)
 
         # Keep the window open, waiting for something to happen.
         # This is blocking because we don't need to do anything else.
         # TODO: implement main loop.
         self.root.mainloop()
 
-    def generate_buttons(self, difficulty):
+    def generate_buttons(self, level):
         # Generate a new set of color buttons according to difficulty.
+        self.busy = True
+
         # Set loading message.
         self.help_label.configure(
-            text=f"Loading (000/{difficulty**2:03})", bg="#ffffff", fg="#2b2b2b")
+            text=f"Loading (000/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
 
         # Reset the frame, clearing the existing buttons:
         self.frame = tk.Frame(self.root, bg="#2b2b2b")
@@ -177,7 +183,7 @@ class GameWindow(Window):
         self.root.update()
 
         # Calculate the size the buttons should be:
-        size = round(100 / difficulty)
+        size = round(100 / level)
 
         # Generate the "correct" color.
         original_color = [
@@ -191,7 +197,7 @@ class GameWindow(Window):
             # Choose which part to change:
             component_to_change = random.randint(0, 2)
             # How much to change it by:
-            change_it_by = round(0xFF / difficulty)
+            change_it_by = round(0xFF / level)
             # Change by pos or neg?
             add_or_subtract = random.choice([-1, 1])
 
@@ -220,19 +226,19 @@ class GameWindow(Window):
             break
 
         # Choose which button will be incorrect.
-        self.diff_btn_row = random.randint(0, difficulty-1)
-        self.diff_btn_col = random.randint(0, difficulty-1)
+        self.diff_btn_row = random.randint(0, level-1)
+        self.diff_btn_col = random.randint(0, level-1)
 
         print("Colors done")
 
         # Configure row/column weights for the inner frame:
-        for i in range(0, difficulty):
+        for i in range(0, level):
             self.frame.rowconfigure(i, weight=1)
             self.frame.columnconfigure(i, weight=1)
 
         # Generate the buttons:
-        for row in range(0, difficulty):
-            for col in range(0, difficulty):
+        for row in range(0, level):
+            for col in range(0, level):
                 # Choose the color for this button.
                 # Is this the wrong button?
                 if (row == self.diff_btn_row and col == self.diff_btn_col):
@@ -240,13 +246,15 @@ class GameWindow(Window):
                 else:
                     color = original_color_str
                 button = tk.Button(self.frame, bg=color, fg=color, highlightthickness=0, activebackground=color, activeforeground="#ffffff",
-                                   relief="flat", text="●", font=("IBM Plex Sans", round(100/difficulty)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
+                                   relief="flat", text="●", font=("IBM Plex Sans", round(100/level)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
                 button.grid(row=row, column=col, padx=1, pady=1)
                 self.help_label.configure(
-                    text=f"Loading ({(row*difficulty)+col:03}/{difficulty**2:03})", bg="#ffffff", fg="#2b2b2b")
+                    text=f"Loading ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
                 self.help_label.update()
 
         print("Buttons done")
+
+        self.busy = False
 
         self.help_label.configure(
             text="Click the odd one out!", bg="#2b2b2b", fg="#ffffff")
@@ -258,21 +266,27 @@ class GameWindow(Window):
 
     def check_color(self, row, col):
         print("Click!")
+        if (self.busy == True):
+            # We're currently busy generating buttons.
+            # Don't process click.
+            return
+
         if (row == self.diff_btn_row and col == self.diff_btn_col):
             # Different color: correct choice!
             # TODO: Start the next level
-            self.difficulty += 1
+            self.level += 1
             self.score_label.configure(
                 text="Correct!", fg="#33d17a")
-            self.generate_buttons(self.difficulty)
+            self.generate_buttons(self.level)
             self.score_label.configure(
-                text=f"Level {self.difficulty}", fg="#ffffff", bg="#2b2b2b")
+                text=f"Level {self.level}", fg="#ffffff", bg="#2b2b2b")
         else:
             # Original color: incorrect.
             # TODO: Alert the user and exit.
             self.score_label.configure(
                 text="Try again...",  fg="#e01b24")
-            self.root.after(1000, lambda: self.score_label.configure(text=f"Level {self.difficulty}",  fg="#ffffff")
+            self.root.after(1000, lambda: self.score_label.configure(
+                text=f"Level {self.level}",  fg="#ffffff"))
 
 
 class SettingsWindow(Window):
@@ -290,4 +304,4 @@ class ScoreWindow(Window):
 # RUNNING
 if __name__ == "__main__":
     # Run the game.
-    application=Application()
+    application = Application()
