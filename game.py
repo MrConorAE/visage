@@ -272,6 +272,7 @@ class GameWindow(Window):
             # TODO: Alert the user and exit.
             self.score_label.configure(
                 text="Try again...",  fg="#e01b24")
+            self.root.after(1000, lambda: self.score_label.configure(text=f"Level {self.difficulty}",  fg="#ffffff")
 
 
 class SettingsWindow(Window):
@@ -289,4 +290,4 @@ class ScoreWindow(Window):
 # RUNNING
 if __name__ == "__main__":
     # Run the game.
-    application = Application()
+    application=Application()
