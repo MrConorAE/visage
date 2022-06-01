@@ -173,57 +173,68 @@ class GameWindow(Window):
         # Generate a new set of color buttons according to difficulty.
         self.busy = True
 
-        # Set loading message.
-        self.help_label.configure(
-            text=f"Loading (000/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
+        original_color_ok = False
+        different_color_ok = False
 
-        # Reset the frame, clearing the existing buttons:
-        self.frame = tk.Frame(self.root, bg="#2b2b2b")
-        self.frame.grid(row=0, column=0, columnspan=3)
-        self.root.update()
+        while original_color_ok is False:
+            # Set loading message.
+            self.help_label.configure(
+                text=f"Loading (000/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
 
-        # Calculate the size the buttons should be:
-        size = round(100 / level)
+            # Reset the frame, clearing the existing buttons:
+            self.frame = tk.Frame(self.root, bg="#2b2b2b")
+            self.frame.grid(row=0, column=0, columnspan=3)
+            self.root.update()
 
-        # Generate the "correct" color.
-        original_color = [
-            random.randint(0x00, 0xff), random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
-        # Convert it to a string for use with Tk.
-        original_color_str = f"#{original_color[0]:02X}{original_color[1]:02X}{original_color[2]:02X}"
+            # Calculate the size the buttons should be:
+            size = round(100 / level)
 
-        # Generate a color.
-        while True:
-            # Generate the "incorrect" color.
-            # Choose which part to change:
-            component_to_change = random.randint(0, 2)
-            # How much to change it by:
-            change_it_by = round(0xFF / level)
-            # Change by pos or neg?
-            add_or_subtract = random.choice([-1, 1])
-
-            different_color = original_color
-            # Generate the new color, using the correct color as a base.
-            different_color[component_to_change] = round(
-                original_color[component_to_change] + (change_it_by * add_or_subtract))
-
-            # If the result is over 255 or under 0, over/underflow it by wrapping around.
-            if (different_color[component_to_change] > 0xFF) or (different_color[component_to_change] < 0x00):
-                different_color[component_to_change] = round(
-                    different_color[component_to_change] % 0xFF)
-
+            # Generate the "correct" color.
+            original_color = [
+                random.randint(0x00, 0xff), random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
             # Convert it to a string for use with Tk.
-            different_color_str = f"#{different_color[0]:02X}{different_color[1]:02X}{different_color[2]:02X}"
+            original_color_str = f"#{original_color[0]:02X}{original_color[1]:02X}{original_color[2]:02X}"
 
-            if (different_color_str == original_color_str):
-                # Identical color, start again.
-                continue
+            # Generate a color.
+            while different_color_ok is False:
+                # Generate the "incorrect" color.
+                # Choose which part to change:
+                component_to_change = random.randint(0, 2)
+                # How much to change it by:
+                change_it_by = round(0xFF / level)
+                # Change by pos or neg?
+                add_or_subtract = random.choice([-1, 1])
 
-            if len(different_color_str) != 7:
-                # Invalid color, start again.
-                continue
+                different_color = original_color
+                # Generate the new color, using the correct color as a base.
+                different_color[component_to_change] = round(
+                    original_color[component_to_change] + (change_it_by * add_or_subtract))
 
-            # Valid color! Break.
-            break
+                # If the result is over 255 or under 0, generate a new base color.
+                if (different_color[component_to_change] > 0xFF) or (different_color[component_to_change] < 0x00):
+                    original_color_ok = False
+                    different_color_ok = False
+                    break
+
+                # Convert it to a string for use with Tk.
+                different_color_str = f"#{different_color[0]:02X}{different_color[1]:02X}{different_color[2]:02X}"
+
+                if (different_color_str == original_color_str):
+                    # Identical color, start again.
+                    original_color_ok = True
+                    different_color_ok = False
+                    continue
+
+                if len(different_color_str) != 7:
+                    # Invalid color, start again.
+                    original_color_ok = True
+                    different_color_ok = False
+                    continue
+
+                # Valid color! Break.
+                original_color_ok = True
+                different_color_ok = True
+                break
 
         # Choose which button will be incorrect.
         self.diff_btn_row = random.randint(0, level-1)
@@ -265,7 +276,6 @@ class GameWindow(Window):
         self.root.destroy()
 
     def check_color(self, row, col):
-        print("Click!")
         if (self.busy == True):
             # We're currently busy generating buttons.
             # Don't process click.
