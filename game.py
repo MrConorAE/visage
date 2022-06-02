@@ -20,18 +20,33 @@ class Application:
     # It calls other classes for the main menu, game, settings, and highscore screens.
     def __init__(self):
         # Initialise game state, including loading data.
-        # self.data = Data()
+        self.data = Data()
         # self.data.load()
 
         # Open the main menu.
-        self.main_menu = MainMenuWindow()
+        self.main_menu = MainMenuWindow(self)
 
 
 class Data:
     # This class is responsible for all the data stored for the game.
     # It contains methods for saving and loading data to/from persistent storage,
     # and for modifying and reading data (e.g. settings, highscores).
-    pass
+    def __init__(self):
+        # Set the defaults.
+        self.button_outlines = False
+        self.button_gaps = True
+        self.highlight = "dot"
+        self.difficulty = 1.0
+
+    def save(self):
+        # Save the game state to persistent storage.
+        # TODO: implement.
+        pass
+
+    def load(self):
+        # Load the game state from persistent storage.
+        # TODO: implement.
+        pass
 
 
 class Window:
@@ -60,10 +75,12 @@ class Window:
 class MainMenuWindow(Window):
     # This class contains the main menu.
     # It can call back to the Application class to start the game.
-    def __init__(self):
+    def __init__(self, application):
         # Open the main menu window.
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Main Menu", 500, 600)
+
+        self.application = application
 
         # Create the frame to keep everything in the centre.
         frame = tk.Frame(self.root, bg="#2b2b2b")
@@ -112,7 +129,8 @@ class MainMenuWindow(Window):
 
     def settings(self):
         # Open the settings window.
-        pass
+        self.root.destroy()
+        self.settings = SettingsWindow(self.application.data)
 
     def quit(self):
         # Quit the game.
@@ -124,7 +142,7 @@ class GameWindow(Window):
     # This class is the game itself.
     # It contains the game loop, and can call back to Application or Data for the game state.
     def __init__(self):
-        # Open the main menu window.
+        # Open the main window.
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Play", 500, 500)
 
@@ -147,7 +165,7 @@ class GameWindow(Window):
 
         # Create the main menu buttons.
         btn_quit = Window.Button(
-            self.root, 10, text="Quit", command=self.quit)
+            self.root, 16, text="Quit", command=self.quit)
         # Place them in the grid.
         btn_quit.grid(row=2, column=0, padx=20, pady=20)
 
@@ -302,7 +320,155 @@ class GameWindow(Window):
 class SettingsWindow(Window):
     # This class contains the settings window.
     # It can call back to Application or Data to change the game settings.
-    pass
+    def __init__(self, data):
+        # Open the settings window.
+        # Perform initialisation using the Window parent class.
+        Window.__init__(self, "Settings", 600, 500)
+
+        self.data = data
+
+        # Create the title.
+        title = tk.Label(self.root, text="Settings",
+                         font=("IBM Plex Sans", 30), bg="#2b2b2b", fg="#ffffff", justify="center")
+        title.grid(row=0, column=0, columnspan=6)
+
+        # Create the save & exit button.
+        exit = Window.Button(self.root, text="Save & Exit",
+                             command=self.save_and_exit)
+        exit.grid(row=5, column=0, columnspan=6)
+
+        # Create the setting labels.
+        label_text = ["Button outlines", "Button gaps",
+                      "Highlight on hover", "Difficulty"]
+        for t in range(len(label_text)):
+            label = tk.Label(
+                self.root, text=label_text[t], font=("IBM Plex Sans", 16), bg="#2b2b2b", fg="#ffffff", justify="left")
+            label.grid(row=t+1, column=0, columnspan=3)
+
+        # Create the option buttons.
+        # Button outlines:
+        self.button_outlines_btn = Window.Button(
+            self.root, 16, text="OFF", command=self.toggle_outlines, width=5)
+        self.button_outlines_btn.grid(row=1, column=4)
+
+        # Button gaps:
+        self.button_gaps_btn = Window.Button(
+            self.root, 16, text="ON", command=self.toggle_gaps, width=5)
+        self.button_gaps_btn.grid(row=2, column=4)
+
+        # Highlights:
+        self.highlight_color_btn = Window.Button(
+            self.root, 16, text="COLOR", command=lambda x="color": self.change_highlight(x), width=5)
+        self.highlight_dot_btn = Window.Button(
+            self.root, 16, text="DOT", command=lambda x="dot": self.change_highlight(x), width=5)
+        self.highlight_none_btn = Window.Button(
+            self.root, 16, text="NONE", command=lambda x="none": self.change_highlight(x), width=5)
+        self.highlight_color_btn.grid(row=3, column=3)
+        self.highlight_dot_btn.grid(row=3, column=4)
+        self.highlight_none_btn.grid(row=3, column=5)
+
+        self.difficulty_easy_btn = tk.Button(
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="EASY",
+            command=lambda x=0.5: self.change_difficulty(x), width=5, fg="#33d17a", bg="#2b2b2b", highlightbackground="#33d17a")
+        self.difficulty_normal_btn = tk.Button(
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="NORMAL",
+            command=lambda x=1.0: self.change_difficulty(x), width=5, fg="#f6d32d", bg="#2b2b2b", highlightbackground="#f6d32d")
+        self.difficulty_hard_btn = tk.Button(
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="HARD",
+            command=lambda x=2.0: self.change_difficulty(x), width=5, fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
+        self.difficulty_easy_btn.grid(row=4, column=3)
+        self.difficulty_normal_btn.grid(row=4, column=4)
+        self.difficulty_hard_btn.grid(row=4, column=5)
+
+        # Set weights for the grid.
+        for c in range(0, 6):
+            self.root.columnconfigure(c, weight=1)
+        for r in range(0, 5):
+            self.root.rowconfigure(r, weight=1)
+
+        self.root.columnconfigure(0, weight=2, minsize=250)
+
+        # Initialise the buttons with the existing data.
+        self.change_difficulty(self.data.difficulty)
+        self.change_highlight(self.data.highlight)
+        self.set_gaps(self.data.button_gaps)
+        self.set_outlines(self.data.button_outlines)
+
+        self.root.mainloop()
+
+    def save_and_exit(self):
+        # Validate, save, and exit the settings window.
+        pass
+
+    def set_outlines(self, value):
+        if (value == False):
+            self.button_outlines_btn.configure(
+                bg="#2b2b2b", fg="#ffffff", text="OFF")
+        else:
+            self.button_outlines_btn.configure(
+                bg="#ffffff", fg="#2b2b2b", text="ON")
+        self.data.button_outlines = value
+
+    def toggle_outlines(self):
+        # Toggle the outlines setting.
+        if (self.button_outlines_btn["text"] == "ON"):
+            # Currently on, turn it off.
+            self.set_outlines(False)
+        else:
+            # Currently off, turn it on.
+            self.set_outlines(True)
+
+    def set_gaps(self, value):
+        if (value == False):
+            self.button_gaps_btn.configure(
+                bg="#2b2b2b", fg="#ffffff", text="OFF")
+        else:
+            self.button_gaps_btn.configure(
+                bg="#ffffff", fg="#2b2b2b", text="ON")
+        self.data.button_gaps = value
+
+    def toggle_gaps(self):
+        # Toggle the gaps setting.
+        if (self.button_gaps_btn["text"] == "ON"):
+            # Currently on, turn it off.
+            self.set_gaps(False)
+        else:
+            # Currently off, turn it on.
+            self.set_gaps(True)
+
+    def change_highlight(self, mode):
+        # Change the highlights setting.
+        if (mode == "color"):
+            self.highlight_color_btn.configure(bg="#ffffff", fg="#2b2b2b")
+            self.highlight_dot_btn.configure(bg="#2b2b2b", fg="#ffffff")
+            self.highlight_none_btn.configure(bg="#2b2b2b", fg="#ffffff")
+        elif (mode == "dot"):
+            self.highlight_color_btn.configure(bg="#2b2b2b", fg="#ffffff")
+            self.highlight_dot_btn.configure(bg="#ffffff", fg="#2b2b2b")
+            self.highlight_none_btn.configure(bg="#2b2b2b", fg="#ffffff")
+        elif (mode == "none"):
+            self.highlight_color_btn.configure(bg="#2b2b2b", fg="#ffffff")
+            self.highlight_dot_btn.configure(bg="#2b2b2b", fg="#ffffff")
+            self.highlight_none_btn.configure(bg="#ffffff", fg="#2b2b2b")
+
+        self.data.highlight = mode
+
+    def change_difficulty(self, difficulty):
+        # Change the difficulty setting.
+        if (difficulty == 0.5):
+            self.difficulty_easy_btn.configure(bg="#33d17a", fg="#2b2b2b")
+            self.difficulty_normal_btn.configure(bg="#2b2b2b", fg="#f6d32d")
+            self.difficulty_hard_btn.configure(bg="#2b2b2b", fg="#e01b24")
+        elif (difficulty == 1.0):
+            self.difficulty_easy_btn.configure(bg="#2b2b2b", fg="#33d17a")
+            self.difficulty_normal_btn.configure(bg="#f6d32d", fg="#2b2b2b")
+            self.difficulty_hard_btn.configure(bg="#2b2b2b", fg="#e01b24")
+        elif (difficulty == 2.0):
+            self.difficulty_easy_btn.configure(bg="#2b2b2b", fg="#33d17a")
+            self.difficulty_normal_btn.configure(bg="#2b2b2b", fg="#f6d32d")
+            self.difficulty_hard_btn.configure(bg="#e01b24", fg="#2b2b2b")
+
+        self.data.difficulty = difficulty
 
 
 class ScoreWindow(Window):
