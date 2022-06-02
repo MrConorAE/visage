@@ -171,12 +171,12 @@ class GameWindow(Window):
 
         # Score label
         self.score_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                    text=f"Level {self.level}", font=("IBM Plex Sans", 20), padx=10, pady=10)
+                                    text=f"Level {self.level}", font=("IBM Plex Sans", 20), padx=10, pady=10, width=10)
         self.score_label.grid(row=2, column=1, padx=20, pady=20)
 
         # Help label
         self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                   text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", font=("IBM Plex Sans", 10), padx=10, pady=10)
+                                   text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", font=("IBM Plex Sans", 10), width=15, padx=10, pady=10)
         self.help_label.grid(row=2, column=2, padx=20, pady=20)
 
         # Create the main menu buttons.
