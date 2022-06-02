@@ -121,7 +121,10 @@ class MainMenuWindow(Window):
     def play(self):
         # Start the game.
         self.root.destroy()
-        self.game = GameWindow()
+        game = GameWindow(self.application.data)
+
+        # Once the game closes, reopen the main menu.
+        self.__init__(self.application)
 
     def highscores(self):
         # Open the highscores window.
@@ -130,7 +133,10 @@ class MainMenuWindow(Window):
     def settings(self):
         # Open the settings window.
         self.root.destroy()
-        self.settings = SettingsWindow(self.application.data)
+        settings = SettingsWindow(self.application.data)
+
+        # Once settings closes, reopen the main menu.
+        self.__init__(self.application)
 
     def quit(self):
         # Quit the game.
@@ -141,10 +147,12 @@ class MainMenuWindow(Window):
 class GameWindow(Window):
     # This class is the game itself.
     # It contains the game loop, and can call back to Application or Data for the game state.
-    def __init__(self):
+    def __init__(self, data):
         # Open the main window.
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Play", 500, 500)
+
+        self.data = data
 
         # Initialise difficulty counter.
         self.level = 3
@@ -180,14 +188,14 @@ class GameWindow(Window):
         self.busy = False
 
         # Generate colors.
-        self.generate_buttons(self.level)
+        self.generate_buttons(self.level, self.data)
 
         # Keep the window open, waiting for something to happen.
         # This is blocking because we don't need to do anything else.
         # TODO: implement main loop.
         self.root.mainloop()
 
-    def generate_buttons(self, level):
+    def generate_buttons(self, level, data):
         # Generate a new set of color buttons according to difficulty.
         self.busy = True
 
@@ -265,6 +273,10 @@ class GameWindow(Window):
             self.frame.rowconfigure(i, weight=1)
             self.frame.columnconfigure(i, weight=1)
 
+        # Check settings for creating buttons.
+        padding = 1 if data.button_gaps == True else 0
+        outlines = 1 if data.button_outlines == True else 0
+
         # Generate the buttons:
         for row in range(0, level):
             for col in range(0, level):
@@ -274,9 +286,23 @@ class GameWindow(Window):
                     color = different_color_str
                 else:
                     color = original_color_str
-                button = tk.Button(self.frame, bg=color, fg=color, highlightthickness=0, activebackground=color, activeforeground="#ffffff",
+
+                # Check what the highlight settings are.
+                if (data.highlight == "color"):
+                    highlight_bg = "#ffffff"
+                    highlight_fg = "#ffffff"
+                elif (data.highlight == "dot"):
+                    highlight_bg = color
+                    highlight_fg = "#ffffff"
+                elif (data.highlight == "none"):
+                    highlight_bg = color
+                    highlight_fg = color
+
+                # Create the button.
+                button = tk.Button(self.frame, bg=color, fg=color, highlightthickness=outlines, activebackground=highlight_bg, activeforeground=highlight_fg,
                                    relief="flat", text="●", font=("IBM Plex Sans", round(100/level)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
-                button.grid(row=row, column=col, padx=1, pady=1)
+
+                button.grid(row=row, column=col, padx=padding, pady=padding)
                 self.help_label.configure(
                     text=f"Loading ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
                 self.help_label.update()
@@ -305,7 +331,7 @@ class GameWindow(Window):
             self.level += 1
             self.score_label.configure(
                 text="Correct!", fg="#33d17a")
-            self.generate_buttons(self.level)
+            self.generate_buttons(self.level, self.data)
             self.score_label.configure(
                 text=f"Level {self.level}", fg="#ffffff", bg="#2b2b2b")
         else:
@@ -398,7 +424,7 @@ class SettingsWindow(Window):
 
     def save_and_exit(self):
         # Validate, save, and exit the settings window.
-        pass
+        self.root.destroy()
 
     def set_outlines(self, value):
         if (value == False):
