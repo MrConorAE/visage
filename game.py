@@ -154,7 +154,15 @@ class GameWindow(Window):
 
         self.data = data
 
-        # Initialise difficulty counter.
+        # Generate a difficulty description for use in the UI.
+        if (self.data.difficulty == 0.5):
+            self.difficulty_str = "Easy"
+        elif (self.data.difficulty == 1.0):
+            self.difficulty_str = "Normal"
+        elif (self.data.difficulty == 2.0):
+            self.difficulty_str = "Hard"
+
+        # Initialise level counter.
         self.level = 3
 
         # Create the frame for the buttons.
@@ -168,7 +176,7 @@ class GameWindow(Window):
 
         # Help label
         self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                   text="Click the odd one out!", font=("IBM Plex Sans", 10), padx=10, pady=10)
+                                   text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", font=("IBM Plex Sans", 10), padx=10, pady=10)
         self.help_label.grid(row=2, column=2, padx=20, pady=20)
 
         # Create the main menu buttons.
@@ -312,7 +320,7 @@ class GameWindow(Window):
         self.busy = False
 
         self.help_label.configure(
-            text="Click the odd one out!", bg="#2b2b2b", fg="#ffffff")
+            text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", bg="#2b2b2b", fg="#ffffff")
 
     def quit(self):
         # Quit the game.
