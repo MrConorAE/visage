@@ -323,7 +323,7 @@ class SettingsWindow(Window):
     def __init__(self, data):
         # Open the settings window.
         # Perform initialisation using the Window parent class.
-        Window.__init__(self, "Settings", 600, 500)
+        Window.__init__(self, "Settings", 700, 500)
 
         self.data = data
 
@@ -338,8 +338,8 @@ class SettingsWindow(Window):
         exit.grid(row=5, column=0, columnspan=6)
 
         # Create the setting labels.
-        label_text = ["Button outlines", "Button gaps",
-                      "Highlight on hover", "Difficulty"]
+        label_text = ["Button outlines", "Gaps between buttons",
+                      "Highlight type", "Game difficulty"]
         for t in range(len(label_text)):
             label = tk.Label(
                 self.root, text=label_text[t], font=("IBM Plex Sans", 16), bg="#2b2b2b", fg="#ffffff", justify="left")
@@ -383,7 +383,7 @@ class SettingsWindow(Window):
         # Set weights for the grid.
         for c in range(0, 6):
             self.root.columnconfigure(c, weight=1)
-        for r in range(0, 5):
+        for r in range(0, 6):
             self.root.rowconfigure(r, weight=1)
 
         self.root.columnconfigure(0, weight=2, minsize=250)
