@@ -219,7 +219,7 @@ class GameWindow(Window):
                 # Choose which part to change:
                 component_to_change = random.randint(0, 2)
                 # How much to change it by:
-                change_it_by = round(0xFF / level)
+                change_it_by = round(0xFF / round(level * data.difficulty))
                 # Change by pos or neg?
                 add_or_subtract = random.choice([-1, 1])
 
