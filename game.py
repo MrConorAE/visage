@@ -210,6 +210,9 @@ class GameWindow(Window):
         original_color_ok = False
         different_color_ok = False
 
+        # Create a 2D array to store the buttons.
+        self.buttons = list()
+
         while original_color_ok is False:
             # Set loading message.
             self.help_label.configure(
@@ -287,6 +290,9 @@ class GameWindow(Window):
 
         # Generate the buttons:
         for row in range(0, level):
+            # Add a new array row.
+            self.buttons.append([])
+
             for col in range(0, level):
                 # Choose the color for this button.
                 # Is this the wrong button?
@@ -311,6 +317,11 @@ class GameWindow(Window):
                                    relief="flat", text="●", font=("IBM Plex Sans", round(100/level)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
 
                 button.grid(row=row, column=col, padx=padding, pady=padding)
+
+                # Save the button to the list.
+                self.buttons[row].append(button)
+
+                # Update the progress indicator.
                 self.help_label.configure(
                     text=f"Loading ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
                 self.help_label.update()
@@ -335,7 +346,6 @@ class GameWindow(Window):
 
         if (row == self.diff_btn_row and col == self.diff_btn_col):
             # Different color: correct choice!
-            # TODO: Start the next level
             self.level += 1
             self.score_label.configure(
                 text="Correct!", fg="#33d17a")
@@ -345,10 +355,33 @@ class GameWindow(Window):
         else:
             # Original color: incorrect.
             # TODO: Alert the user and exit.
+
+            # Set busy to disallow clicks
+            self.busy = True
             self.score_label.configure(
-                text="Try again...",  fg="#e01b24")
-            self.root.after(1000, lambda: self.score_label.configure(
-                text=f"Level {self.level}",  fg="#ffffff"))
+                text="Incorrect...",  fg="#e01b24")
+
+            # Indicate where the incorrect button is by flashing a dot on it.
+            self.buttons[self.diff_btn_row][self.diff_btn_col].configure(
+                fg="#ffffff", text="●")
+            self.root.after(
+                500, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text=""))
+            self.root.after(
+                1000, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text="●"))
+            self.root.after(
+                1500, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text=""))
+            self.root.after(
+                2000, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text="●"))
+            self.root.after(
+                2500, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text=""))
+            self.root.after(
+                3000, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text="●"))
+
+            # Generate a new set of buttons at the SAME difficulty.
+            self.root.after(3500, lambda: self.generate_buttons(
+                self.level, self.data))
+            self.root.after(3500, lambda: self.score_label.configure(
+                text=f"Level {self.level}", fg="#ffffff", bg="#2b2b2b"))
 
 
 class SettingsWindow(Window):
