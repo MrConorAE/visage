@@ -9,7 +9,15 @@ import tkinter as tk
 # Import random for random generation of colors
 import random
 
+# Import pickle for saving and loading of user data & game state
+import pickle
+
+# Import one function from os for finding the data file
+# From https://stackoverflow.com/a/4028943/7311875
+from os.path import expanduser
+
 # CLASSES
+
 
 class Application:
     # This class is the main class for the game.
@@ -37,13 +45,41 @@ class Data:
 
     def save(self):
         # Save the game state to persistent storage.
-        # TODO: implement.
-        pass
+
+        # First, get the location to save to. This is the user's home directory.
+        # From https://stackoverflow.com/a/4028943/7311875
+        location = expanduser("~")
+
+        # Open the file to save to.
+        try:
+            with open(location + "/visage_save.data", "wb") as file:
+                # Now save the entire contents of the Data class to a Pickle file in that location.
+                pickle.dump(self, file)
+        except Exception as e:
+            # If there's an error, alert the user.
+            msg = MessageWindow(
+                "Error", f"Could not save Visage data at\n{location + '/visage_save.data'}\nYour progress HAS NOT been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try again, press 'Try Again'. To exit without saving, press 'Exit Anyway'.\n\nMore details on the error can be seen below:\n\n{e}", 1000, 600, "Exit Anyway", second_button={'text': 'Try Again', 'command': self.save})
 
     def load(self):
         # Load the game state from persistent storage.
-        # TODO: implement.
-        pass
+
+        # First, get the location to load from. This is the user's home directory.
+        # From https://stackoverflow.com/a/4028943/7311875
+        location = expanduser("~")
+
+        # Open the file to read from.
+        try:
+            with open(location + "/visage_save.data", "rb") as file:
+                # Now load the entire contents of the Pickle file into the Data class.
+                self = pickle.load(file)
+        except FileNotFoundError:
+            # No savefile exists.
+            msg = MessageWindow(
+                "Information", f"No Visage savefile was found. A new save file will be created at\n{location + '/visage_save.data'}.\nGame data is saved automatically when the game closes.", 1000, 600, "Continue")
+        except Exception as e:
+            # If there's an error, alert the user.
+            msg = MessageWindow(
+                "Error", f"A Visage save file was found at\n{location + '/visage_save.data'}\nbut it could not be loaded.\nPlease check you have permission to access this file and that it has not been edited.\n\nMore details on the error can be seen below:\n\n{e}", 1000, 600, "Continue")
 
 
 class Window:
@@ -67,6 +103,35 @@ class Window:
     def Button(parent, fontsize=20, **kwargs):
         # Create a button with the default options.
         return tk.Button(parent, font=("IBM Plex Sans", fontsize), bg="#2b2b2b", fg="#ffffff", relief="flat", **kwargs)
+
+
+class MessageWindow(Window):
+    # This class contains code for a single-message window to inform the user.
+    def __init__(self, title, text, width, height, buttontext="OK", second_button={}):
+        Window.__init__(self, title, width, height)
+
+        label = tk.Label(self.root, text=text,
+                         bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", ))
+        label.grid(row=0, column=0)
+
+        button = Window.Button(
+            self.root, text=buttontext, command=lambda: self.run(None))
+        button.grid(row=1, column=0, padx=10, pady=10)
+
+        if (second_button):
+            button_two = Window.Button(
+                self.root, text=second_button['text'], command=lambda: self.run(second_button['command']))
+            button_two.grid(row=2, column=0, padx=10, pady=10)
+
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
+
+        self.root.mainloop()
+
+    def run(self, command):
+        self.root.destroy()
+        if (command):
+            command()
 
 
 class MainMenuWindow(Window):
@@ -141,8 +206,8 @@ class MainMenuWindow(Window):
 
     def quit(self):
         # Quit the game.
-        # TODO: save state and highscores before exiting.
         self.root.destroy()
+        self.application.data.save()
 
 
 class GameWindow(Window):
@@ -175,7 +240,8 @@ class GameWindow(Window):
         self.level = 3
 
         # Create the frame for the buttons.
-        self.frame = tk.Frame(self.root, bg="#2b2b2b", width=400, height=400)
+        self.frame = tk.Frame(self.root, bg="#2b2b2b",
+                              width=400, height=400)
         self.frame.grid(row=0, column=0, columnspan=3, sticky="NESW")
 
         # Score label
@@ -626,6 +692,7 @@ class ScoreWindow(Window):
                 text=f"Your highscore:\n{self.data.highscore}")
             self.reset.configure(
                 text="Highscore Reset", bg="#2b2b2b", fg="#424242", highlightbackground="#424242", state="disabled")
+
 
     # RUNNING
 if __name__ == "__main__":
