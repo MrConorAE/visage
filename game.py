@@ -345,8 +345,8 @@ class GameWindow(Window):
     def quit(self):
         # Quit the game.
         # Is this a new highscore?
-        if (self.level > self.data.highscore):
-            self.data.highscore = self.level
+        if (round(self.level * self.data.difficulty) > self.data.highscore):
+            self.data.highscore = round(self.level * self.data.difficulty)
         self.data.save()
         self.root.destroy()
 
