@@ -14,7 +14,7 @@ import pickle
 
 # Import one function from os for finding the data file
 # From https://stackoverflow.com/a/4028943/7311875
-from os.path import expanduser
+import os.path
 
 # CLASSES
 
@@ -24,8 +24,8 @@ class Application:
     # It calls other classes for the main menu, game, settings, and highscore screens.
     def __init__(self):
         # Initialise game state, including loading data.
-        self.data = Data()
-        self.data.load()
+        Application.data = Data()
+        Application.data.load()
 
         # Open the main menu.
         self.main_menu = MainMenuWindow(self)
@@ -43,43 +43,46 @@ class Data:
         self.difficulty = 1.0
         self.highscore = 3
 
+    def resolve_save_location(self):
+        return os.path.join(os.path.expanduser("~"), "visage_save.data")
+
     def save(self):
         # Save the game state to persistent storage.
 
         # First, get the location to save to. This is the user's home directory.
         # From https://stackoverflow.com/a/4028943/7311875
-        location = expanduser("~")
+        location = self.resolve_save_location()
 
         # Open the file to save to.
         try:
-            with open(location + "/visage_save.data", "wb") as file:
+            with open(location, "wb") as file:
                 # Now save the entire contents of the Data class to a Pickle file in that location.
                 pickle.dump(self, file)
         except Exception as e:
             # If there's an error, alert the user.
             msg = MessageWindow(
-                "Error", f"Could not save Visage data at\n'{location + '/visage_save.data'}'.\nYour progress and settings have not been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try to save again, press 'Try Again'. To exit without saving your data, press 'Exit Without Saving'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Exit Without Saving", second_button={'text': 'Try Again', 'command': self.save})
+                "Error", f"Could not save Visage data at\n'{location}'.\nYour progress and settings have not been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try to save again, press 'Try Again'. To exit without saving your data, press 'Exit Without Saving'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Exit Without Saving", second_button={'text': 'Try Again', 'command': self.save})
 
     def load(self):
         # Load the game state from persistent storage.
 
         # First, get the location to load from. This is the user's home directory.
         # From https://stackoverflow.com/a/4028943/7311875
-        location = expanduser("~")
+        location = self.resolve_save_location()
 
         # Open the file to read from.
         try:
-            with open(location + "/visage_save.data", "rb") as file:
+            with open(location, "rb") as file:
                 # Now load the entire contents of the Pickle file into the Data class.
-                self = pickle.load(file)
+                Application.data = pickle.load(file)
         except FileNotFoundError:
             # No savefile exists.
             msg = MessageWindow(
-                "Information", f"No Visage savefile was found. A new save file will be created at\n'{location + '/visage_save.data'}'.\nGame data, including scores & settings, is saved automatically.\nPlease ensure you have access to this location and that your\naccount has the necessary permissions to read/write data there.", 1000, 600, "Continue")
+                "Information", f"No Visage savefile was found. A new save file will be created at\n'{location}'.\nGame data, including scores & settings, is saved automatically.\nPlease ensure you have access to this location and that your\naccount has the necessary permissions to read/write data there.", 1000, 600, "Continue")
         except Exception as e:
             # If there's an error, alert the user.
             msg = MessageWindow(
-                "Error", f"A Visage save file was found at\n'{location + '/visage_save.data'}',\nbut it could not be read.\nPlease check you have permission to access this file and that it has not been edited.\nIf you would like to try to load again, press 'Try Again'. To continue without loading your data, press 'Continue Without Loading'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Continue Without Loading", second_button={'text': 'Try Again', 'command': self.load})
+                "Error", f"A Visage save file was found at\n'{location}',\nbut it could not be read.\nPlease check you have permission to access this file and that it has not been edited.\nIf you would like to try to load again, press 'Try Again'. To continue without loading your data, press 'Continue Without Loading'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Continue Without Loading", second_button={'text': 'Try Again', 'command': self.load})
 
 
 class Window:
@@ -143,6 +146,9 @@ class MainMenuWindow(Window):
         Window.__init__(self, "Main Menu", 500, 600)
 
         self.application = application
+
+        # Alias the close button to quit()
+        self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
         # Create the frame to keep everything in the centre.
         frame = tk.Frame(self.root, bg="#2b2b2b")
@@ -219,6 +225,9 @@ class GameWindow(Window):
         Window.__init__(self, "Play", 500, 500)
 
         self.data = data
+
+        # Alias the close button to quit()
+        self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
         # Lives counter.
         if self.data.difficulty == 0.5:
@@ -410,8 +419,8 @@ class GameWindow(Window):
     def quit(self):
         # Quit the game.
         # Is this a new highscore?
-        if ((self.level * self.data.difficulty) > self.data.highscore):
-            self.data.highscore = (self.level * self.data.difficulty)
+        if ((self.level * self.data.difficulty) >= self.data.highscore):
+            self.data.highscore = self.level * self.data.difficulty
         self.root.destroy()
         self.data.save()
 
@@ -491,6 +500,9 @@ class SettingsWindow(Window):
         Window.__init__(self, "Settings", 700, 500)
 
         self.data = data
+
+        # Alias the close button to save_and_exit()
+        self.root.protocol("WM_DELETE_WINDOW", self.save_and_exit)
 
         # Create the title.
         title = tk.Label(self.root, text="Settings",
@@ -644,6 +656,9 @@ class ScoreWindow(Window):
         Window.__init__(self, "High Score", 500, 500)
 
         self.data = data
+
+        # Alias the close button to quit()
+        self.root.protocol("WM_DELETE_WINDOW", self.back)
 
         # Create the title.
         title = tk.Label(self.root, text="High Score",
