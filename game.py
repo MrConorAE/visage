@@ -58,7 +58,7 @@ class Data:
         except Exception as e:
             # If there's an error, alert the user.
             msg = MessageWindow(
-                "Error", f"Could not save Visage data at\n{location + '/visage_save.data'}\nYour progress HAS NOT been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try again, press 'Try Again'. To exit without saving, press 'Exit Anyway'.\n\nMore details on the error can be seen below:\n\n{e}", 1000, 600, "Exit Anyway", second_button={'text': 'Try Again', 'command': self.save})
+                "Error", f"Could not save Visage data at\n'{location + '/visage_save.data'}'.\nYour progress and settings have not been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try to save again, press 'Try Again'. To exit without saving your data, press 'Exit Without Saving'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Exit Without Saving", second_button={'text': 'Try Again', 'command': self.save})
 
     def load(self):
         # Load the game state from persistent storage.
@@ -75,11 +75,11 @@ class Data:
         except FileNotFoundError:
             # No savefile exists.
             msg = MessageWindow(
-                "Information", f"No Visage savefile was found. A new save file will be created at\n{location + '/visage_save.data'}.\nGame data is saved automatically when the game closes.", 1000, 600, "Continue")
+                "Information", f"No Visage savefile was found. A new save file will be created at\n'{location + '/visage_save.data'}'.\nGame data, including scores & settings, is saved automatically.\nPlease ensure you have access to this location and that your\naccount has the necessary permissions to read/write data there.", 1000, 600, "Continue")
         except Exception as e:
             # If there's an error, alert the user.
             msg = MessageWindow(
-                "Error", f"A Visage save file was found at\n{location + '/visage_save.data'}\nbut it could not be loaded.\nPlease check you have permission to access this file and that it has not been edited.\n\nMore details on the error can be seen below:\n\n{e}", 1000, 600, "Continue")
+                "Error", f"A Visage save file was found at\n'{location + '/visage_save.data'}',\nbut it could not be read.\nPlease check you have permission to access this file and that it has not been edited.\nIf you would like to try to load again, press 'Try Again'. To continue without loading your data, press 'Continue Without Loading'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Continue Without Loading", second_button={'text': 'Try Again', 'command': self.load})
 
 
 class Window:
@@ -410,10 +410,10 @@ class GameWindow(Window):
     def quit(self):
         # Quit the game.
         # Is this a new highscore?
-        if (round(self.level * self.data.difficulty) > self.data.highscore):
-            self.data.highscore = round(self.level * self.data.difficulty)
-        self.data.save()
+        if ((self.level * self.data.difficulty) > self.data.highscore):
+            self.data.highscore = (self.level * self.data.difficulty)
         self.root.destroy()
+        self.data.save()
 
     def game_over(self):
         # Game over! Show the user's score, and save it.
@@ -426,7 +426,7 @@ class GameWindow(Window):
         game_over_text.grid(row=0, column=0)
 
         score_text = tk.Label(
-            self.frame, text=f"Level {self.level}\n on {self.difficulty_str} difficulty", bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", 24))
+            self.frame, text=f"Level {self.level}\n on {self.difficulty_str} difficulty\n= Score: {(self.level * self.data.difficulty)}", bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", 24))
         score_text.grid(row=1, column=0)
 
         next_steps_text = tk.Label(
@@ -564,6 +564,7 @@ class SettingsWindow(Window):
     def save_and_exit(self):
         # Validate, save, and exit the settings window.
         self.root.destroy()
+        self.data.save()
 
     def set_outlines(self, value):
         if (value == False):
