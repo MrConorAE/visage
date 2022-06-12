@@ -9,10 +9,6 @@ import tkinter as tk
 # Import random for random generation of colors
 import random
 
-# Import time for accurate timers
-import time
-
-
 # CLASSES
 
 class Application:
