@@ -21,7 +21,7 @@ class Application:
     def __init__(self):
         # Initialise game state, including loading data.
         self.data = Data()
-        # self.data.load()
+        self.data.load()
 
         # Open the main menu.
         self.main_menu = MainMenuWindow(self)
@@ -37,6 +37,7 @@ class Data:
         self.button_gaps = True
         self.highlight = "dot"
         self.difficulty = 1.0
+        self.highscore = 1
 
     def save(self):
         # Save the game state to persistent storage.
@@ -154,6 +155,14 @@ class GameWindow(Window):
 
         self.data = data
 
+        # Lives counter.
+        if self.data.difficulty == 0.5:
+            self.lives = 5
+        elif self.data.difficulty == 1.0:
+            self.lives = 3
+        elif self.data.difficulty == 2.0:
+            self.lives = 1
+
         # Generate a difficulty description for use in the UI.
         if (self.data.difficulty == 0.5):
             self.difficulty_str = "Easy"
@@ -176,7 +185,7 @@ class GameWindow(Window):
 
         # Help label
         self.help_label = tk.Label(self.root, bg="#2b2b2b", fg="#ffffff",
-                                   text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", font=("IBM Plex Sans", 10), width=15, padx=10, pady=10)
+                                   text=f"{'❤'*self.lives}\nDifficulty: {self.difficulty_str}", font=("IBM Plex Sans", 10), width=15, padx=10, pady=10)
         self.help_label.grid(row=2, column=2, padx=20, pady=20)
 
         # Create the main menu buttons.
@@ -331,12 +340,33 @@ class GameWindow(Window):
         self.busy = False
 
         self.help_label.configure(
-            text=f"Click the odd one out!\nDifficulty: {self.difficulty_str}", bg="#2b2b2b", fg="#ffffff")
+            text=f"{'❤'*self.lives}\nDifficulty: {self.difficulty_str}", bg="#2b2b2b", fg="#ffffff")
 
     def quit(self):
         # Quit the game.
-        # TODO: Save score and reopen main menu.
+        # Is this a new highscore?
+        if (self.level > self.data.highscore):
+            self.data.highscore = self.level
+        self.data.save()
         self.root.destroy()
+
+    def game_over(self):
+        # Game over! Show the user's score, and save it.
+        self.frame = tk.Frame(self.root, bg="#2b2b2b")
+        self.frame.grid(row=0, column=0, columnspan=3)
+        self.root.update()
+
+        game_over_text = tk.Label(
+            self.frame, text=f"Game over!", bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", 30))
+        game_over_text.grid(row=0, column=0)
+
+        score_text = tk.Label(
+            self.frame, text=f"Level {self.level}\n on {self.difficulty_str} difficulty", bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", 24))
+        score_text.grid(row=1, column=0)
+
+        next_steps_text = tk.Label(
+            self.frame, text=f"Press Quit to return\nto the main menu.", bg="#2b2b2b", fg="#ffffff", font=("IBM Plex Sans", 18))
+        next_steps_text.grid(row=2, column=0)
 
     def check_color(self, row, col):
         if (self.busy == True):
@@ -361,6 +391,8 @@ class GameWindow(Window):
             self.score_label.configure(
                 text="Incorrect...",  fg="#e01b24")
 
+            self.lives -= 1
+
             # Indicate where the incorrect button is by flashing a dot on it.
             self.buttons[self.diff_btn_row][self.diff_btn_col].configure(
                 fg="#ffffff", text="●")
@@ -372,16 +404,17 @@ class GameWindow(Window):
                 1500, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text=""))
             self.root.after(
                 2000, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text="●"))
-            self.root.after(
-                2500, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text=""))
-            self.root.after(
-                3000, lambda: self.buttons[self.diff_btn_row][self.diff_btn_col].configure(text="●"))
 
-            # Generate a new set of buttons at the SAME difficulty.
-            self.root.after(3500, lambda: self.generate_buttons(
-                self.level, self.data))
-            self.root.after(3500, lambda: self.score_label.configure(
-                text=f"Level {self.level}", fg="#ffffff", bg="#2b2b2b"))
+            # Was that the last life?
+            # If so, exit and show the user's score (the level).
+            if (self.lives == 0):
+                self.root.after(2500, lambda: self.game_over())
+            else:
+                # Generate a new set of buttons at the SAME difficulty.
+                self.root.after(2500, lambda: self.generate_buttons(
+                    self.level, self.data))
+                self.root.after(2500, lambda: self.score_label.configure(
+                    text=f"Level {self.level}", fg="#ffffff", bg="#2b2b2b"))
 
 
 class SettingsWindow(Window):
