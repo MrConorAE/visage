@@ -37,7 +37,7 @@ class Data:
         self.button_gaps = True
         self.highlight = "dot"
         self.difficulty = 1.0
-        self.highscore = 1
+        self.highscore = 3
 
     def save(self):
         # Save the game state to persistent storage.
@@ -129,7 +129,11 @@ class MainMenuWindow(Window):
 
     def highscores(self):
         # Open the highscores window.
-        pass
+        self.root.destroy()
+        scorewindow = ScoreWindow(self.application.data)
+
+        # Once the score window closes, reopen the main menu.
+        self.__init__(self.application)
 
     def settings(self):
         # Open the settings window.
@@ -209,7 +213,6 @@ class GameWindow(Window):
 
         # Keep the window open, waiting for something to happen.
         # This is blocking because we don't need to do anything else.
-        # TODO: implement main loop.
         self.root.mainloop()
 
     def generate_buttons(self, level, data):
@@ -572,12 +575,63 @@ class SettingsWindow(Window):
 
 
 class ScoreWindow(Window):
-    # This class contains the score window, shown at the end of the game.
-    # It can call back to Application when done, and Data to save the score.
-    pass
+    # This class contains the highscore window, viewed when clicking "Highscores" on the main menu.
+    # It gathers its' data from the Data class.
+    def __init__(self, data):
+        Window.__init__(self, "High Score", 500, 500)
 
+        self.data = data
 
-# RUNNING
+        # Create the title.
+        title = tk.Label(self.root, text="High Score",
+                         font=("IBM Plex Sans", 30), bg="#2b2b2b", fg="#ffffff", justify="center")
+        title.grid(row=0, column=0)
+
+        # Show the highscore.
+        self.score = tk.Label(self.root, text=f"Your highscore:\n{self.data.highscore}",
+                              font=("IBM Plex Sans", 24), bg="#2b2b2b", fg="#ffffff", justify="center")
+        self.score.grid(row=1, column=0)
+
+        # Create the reset button.
+        self.reset_clicks = 0
+        self.reset = tk.Button(
+            self.root, font=("IBM Plex Sans", 20), relief="flat", text="Reset Highscore",
+            command=self.reset, fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
+        self.reset.grid(row=2, column=0)
+
+        # Create the back button.
+        exit = Window.Button(self.root, text="Back to Menu",
+                             command=self.back)
+        exit.grid(row=3, column=0)
+
+        # Set weights for the grid.
+        for r in range(0, 4):
+            self.root.rowconfigure(r, weight=1)
+
+        self.root.columnconfigure(0, weight=1, minsize=250)
+
+        self.root.mainloop()
+
+    def back(self):
+        # Close this window.
+        self.root.destroy()
+
+    def reset(self):
+        if (self.reset_clicks == 0):
+            # First click. Change button to "armed" state.
+            self.reset.configure(
+                text="Are you sure?", bg="#e01b24", fg="#2b2b2b", highlightbackground="#e01b24")
+            self.reset_clicks = 1
+        elif (self.reset_clicks == 1):
+            # Second click. Actually reset!
+            self.data.highscore = 3
+            # Show the updated score.
+            self.score.configure(
+                text=f"Your highscore:\n{self.data.highscore}")
+            self.reset.configure(
+                text="Highscore Reset", bg="#2b2b2b", fg="#424242", highlightbackground="#424242", state="disabled")
+
+    # RUNNING
 if __name__ == "__main__":
     # Run the game.
     application = Application()
