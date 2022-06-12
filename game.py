@@ -360,8 +360,6 @@ class GameWindow(Window):
         self.diff_btn_row = random.randint(0, level-1)
         self.diff_btn_col = random.randint(0, level-1)
 
-        print("Colors done")
-
         # Configure row/column weights for the inner frame:
         for i in range(0, level):
             self.frame.rowconfigure(i, weight=1)
@@ -408,8 +406,6 @@ class GameWindow(Window):
                 self.help_label.configure(
                     text=f"Loading ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
                 self.help_label.update()
-
-        print("Buttons done")
 
         self.busy = False
 
