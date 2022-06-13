@@ -249,7 +249,7 @@ class GameWindow(Window):
         else:
             self.difficulty_str = "Insane"
 
-        self.difficulty_str += f" (x{self.data.difficulty})"
+        self.difficulty_str += f" ({int(self.data.difficulty * 10)})"
 
         # Initialise level counter.
         self.level = 3
