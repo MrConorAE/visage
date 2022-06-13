@@ -166,7 +166,7 @@ class MainMenuWindow(Window):
         btn_highscores = Window.Button(
             frame, text="Highscores", command=self.highscores, width=25)
         btn_settings = Window.Button(
-            frame, text="Settings", command=self.settings, width=25)
+            frame, text="Options", command=self.settings, width=25)
         btn_quit = Window.Button(
             frame, text="Quit", command=self.quit, width=25)
         # Place them in the grid.
@@ -509,7 +509,7 @@ class SettingsWindow(Window):
     def __init__(self, data):
         # Open the settings window.
         # Perform initialisation using the Window parent class.
-        Window.__init__(self, "Settings", 700, 500)
+        Window.__init__(self, "Options", 700, 500)
 
         self.data = data
 
@@ -517,7 +517,7 @@ class SettingsWindow(Window):
         self.root.protocol("WM_DELETE_WINDOW", self.save_and_exit)
 
         # Create the title.
-        self.title = tk.Label(self.root, text="Settings",
+        self.title = tk.Label(self.root, text="Options",
                               font=("IBM Plex Sans", 30), bg="#2b2b2b", fg="#ffffff", justify="center")
         self.title.grid(row=0, column=0, columnspan=6)
 
