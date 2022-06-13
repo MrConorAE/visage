@@ -512,7 +512,7 @@ class SettingsWindow(Window):
 
         # Create the setting labels.
         label_text = ["Button outlines:", "Gaps between buttons:",
-                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value:"]
+                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value (1-100):"]
         for t in range(len(label_text)):
             label = tk.Label(
                 self.root, text=label_text[t], font=("IBM Plex Sans", 16), bg="#2b2b2b", fg="#ffffff", justify="left")
@@ -543,20 +543,22 @@ class SettingsWindow(Window):
         # Difficulty presets:
         self.difficulty_easy_btn = tk.Button(
             self.root, font=("IBM Plex Sans", 16), relief="flat", text="EASY",
-            command=lambda x=0.5: self.change_difficulty(x), width=5, fg="#33d17a", bg="#2b2b2b", highlightbackground="#33d17a")
+            command=lambda x=5: self.change_difficulty(x, True), width=5, fg="#33d17a", bg="#2b2b2b", highlightbackground="#33d17a")
         self.difficulty_normal_btn = tk.Button(
             self.root, font=("IBM Plex Sans", 16), relief="flat", text="NORMAL",
-            command=lambda x=1.0: self.change_difficulty(x), width=5, fg="#f6d32d", bg="#2b2b2b", highlightbackground="#f6d32d")
+            command=lambda x=10: self.change_difficulty(x, True), width=5, fg="#f6d32d", bg="#2b2b2b", highlightbackground="#f6d32d")
         self.difficulty_hard_btn = tk.Button(
             self.root, font=("IBM Plex Sans", 16), relief="flat", text="HARD",
-            command=lambda x=2.0: self.change_difficulty(x), width=5, fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
+            command=lambda x=20: self.change_difficulty(x, True), width=5, fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
         self.difficulty_easy_btn.grid(row=4, column=3)
         self.difficulty_normal_btn.grid(row=4, column=4)
         self.difficulty_hard_btn.grid(row=4, column=5)
 
         # Difficulty spinbox:
         self.difficulty_spinbox = tk.Spinbox(
-            self.root, font=("IBM Plex Sans", 16), relief="flat", from_=0.1, to=10.0, increment=0.1, width=5, fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff", buttonbackground="#2b2b2b", command=self.validate_difficulty)
+            self.root, font=("IBM Plex Sans", 16), relief="flat", from_=0, to=100, increment=1, width=5, fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff", buttonbackground="#2b2b2b", validate="key")
+        self.difficulty_spinbox["validatecommand"] = (
+            self.root.register(self.validate_difficulty), '%P')
         self.difficulty_spinbox.grid(row=5, column=3, columnspan=3)
 
         # Set weights for the grid.
@@ -568,7 +570,7 @@ class SettingsWindow(Window):
         self.root.columnconfigure(0, weight=2, minsize=250)
 
         # Initialise the buttons with the existing data.
-        self.change_difficulty(self.data.difficulty)
+        self.change_difficulty(int(self.data.difficulty * 10), True)
         self.change_highlight(self.data.highlight)
         self.set_gaps(self.data.button_gaps)
         self.set_outlines(self.data.button_outlines)
@@ -577,8 +579,12 @@ class SettingsWindow(Window):
 
     def save_and_exit(self):
         # Validate, save, and exit the settings window.
-        self.root.destroy()
-        self.data.save()
+        if (self.exit["state"] == "disabled"):
+            # An invalid setting. Don't exit.
+            pass
+        else:
+            self.root.destroy()
+            self.data.save()
 
     def set_outlines(self, value):
         if (value == False):
@@ -633,17 +639,28 @@ class SettingsWindow(Window):
 
         self.data.highlight = mode
 
-    def change_difficulty(self, difficulty):
+    def change_difficulty(self, difficulty, overwrite=False):
         # Change the difficulty setting.
-        if (difficulty == 0.5):
+
+        # Convert difficulty to an integer.
+        difficulty = int(difficulty)
+
+        if (overwrite):
+            # If this was triggered by a preset, then overwrite the spinbox contents.
+            # Otherwise, don't.
+            self.difficulty_spinbox.delete(0, "end")
+            self.difficulty_spinbox.insert(0, difficulty)
+
+        # If the current value matches a preset, highlight that button.
+        if (difficulty == 5):
             self.difficulty_easy_btn.configure(bg="#33d17a", fg="#2b2b2b")
             self.difficulty_normal_btn.configure(bg="#2b2b2b", fg="#f6d32d")
             self.difficulty_hard_btn.configure(bg="#2b2b2b", fg="#e01b24")
-        elif (difficulty == 1.0):
+        elif (difficulty == 10):
             self.difficulty_easy_btn.configure(bg="#2b2b2b", fg="#33d17a")
             self.difficulty_normal_btn.configure(bg="#f6d32d", fg="#2b2b2b")
             self.difficulty_hard_btn.configure(bg="#2b2b2b", fg="#e01b24")
-        elif (difficulty == 2.0):
+        elif (difficulty == 20):
             self.difficulty_easy_btn.configure(bg="#2b2b2b", fg="#33d17a")
             self.difficulty_normal_btn.configure(bg="#2b2b2b", fg="#f6d32d")
             self.difficulty_hard_btn.configure(bg="#e01b24", fg="#2b2b2b")
@@ -652,9 +669,10 @@ class SettingsWindow(Window):
             self.difficulty_normal_btn.configure(bg="#2b2b2b", fg="#f6d32d")
             self.difficulty_hard_btn.configure(bg="#2b2b2b", fg="#e01b24")
 
-        self.data.difficulty = difficulty
+        # Update the setting value.
+        self.data.difficulty = float(int(difficulty) / 10)
 
-    def validate_difficulty(self):
+    def validate_difficulty(self, value):
         # Validate the entered difficulty (float) value.
         # Ensure that it is not:
         # - less than 0.2 or greater than 10.0
@@ -666,33 +684,34 @@ class SettingsWindow(Window):
         # Set our valid state, default to valid.
         valid = True
 
-        # Get the value of the spinbox:
-        value = self.difficulty_spinbox.get()
-
         # Check for float-ness
-        try:
-            float(value)
-        except ValueError:
+        if (not value.isdigit()):
             valid = False
 
-        # Check for bounds
-        if (float(value) < 0.2 or float(value) > 10.0):
+        try:
+            # Check for bounds
+            if (int(value) < 2 or int(value) > 100):
+                valid = False
+
+        except ValueError:
             valid = False
 
         # Finally, apply the result.
         # It's valid:
         if (valid):
             self.exit.configure(
-                state="normal", fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff")
+                state="normal", fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff", text="Save & Exit")
             self.difficulty_spinbox.configure(
                 fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff")
-            self.change_difficulty(float(value))
+            self.change_difficulty(value)
         # It's not valid:
         elif (not valid):
             self.exit.configure(
-                state="disabled", fg="#424242", bg="#2b2b2b", highlightbackground="#424242")
+                state="disabled", fg="#424242", bg="#2b2b2b", highlightbackground="#424242", text="Invalid Difficulty")
             self.difficulty_spinbox.configure(
                 fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
+
+        return True
 
 
 class ScoreWindow(Window):
