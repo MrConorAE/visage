@@ -238,14 +238,18 @@ class GameWindow(Window):
             self.lives = 1
 
         # Generate a difficulty description for use in the UI.
-        if (self.data.difficulty == 0.5):
+        if (self.data.difficulty <= 0.75):
             self.difficulty_str = "Easy"
-        elif (self.data.difficulty == 1.0):
+        elif (self.data.difficulty <= 1.25):
             self.difficulty_str = "Normal"
-        elif (self.data.difficulty == 2.0):
+        elif (self.data.difficulty <= 3.0):
             self.difficulty_str = "Hard"
+        elif (self.data.difficulty <= 4.0):
+            self.difficulty_str = "Very Hard"
         else:
-            self.difficulty_str = f"Custom ({self.data.difficulty})"
+            self.difficulty_str = "Insane"
+
+        self.difficulty_str += f" (x{self.data.difficulty})"
 
         # Initialise level counter.
         self.level = 3
