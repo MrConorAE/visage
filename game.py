@@ -4,6 +4,7 @@
 
 # IMPORTS
 # Import Tk for graphical user interfaces
+import pathlib
 import tkinter as tk
 
 # Import random for random generation of colors
@@ -155,7 +156,16 @@ class MainMenuWindow(Window):
         frame.grid(row=0, column=0)
 
         # Create the logo image.
-        logo = tk.PhotoImage(file="logo.png")
+
+        # Resolve the file path of the logo, based on the current working directory.
+        # Without this, the game would not run with the wrong working directory (i.e. not the same as the script).
+        # This special function is needed to ensure that the directory separators are correct
+        # ('/' on Mac and Unix systems, and '\' on Windows)
+        #          Join...      the current location of the script...    with the filename.
+        img_path = os.path.join(pathlib.Path(
+            __file__).parent.resolve(), "logo.png")
+
+        logo = tk.PhotoImage(file=img_path)
         logo_label = tk.Label(frame, image=logo, bg="#2b2b2b")
         # Place it in the grid.
         logo_label.grid(row=0, column=0, padx=20, pady=20)
@@ -789,7 +799,6 @@ class ScoreWindow(Window):
                 text=f"Your highscore:\n{self.data.highscore}")
             self.reset.configure(
                 text="Highscore Reset", bg="#2b2b2b", fg="#424242", highlightbackground="#424242", state="disabled")
-
 
     # RUNNING
 if __name__ == "__main__":
