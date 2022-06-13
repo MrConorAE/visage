@@ -537,34 +537,34 @@ class SettingsWindow(Window):
         # Create the option buttons.
         # Button outlines:
         self.button_outlines_btn = Window.Button(
-            self.root, 16, text="OFF", command=self.toggle_outlines, width=5)
+            self.root, 16, text="Off", command=self.toggle_outlines, width=5)
         self.button_outlines_btn.grid(row=1, column=4)
 
         # Button gaps:
         self.button_gaps_btn = Window.Button(
-            self.root, 16, text="ON", command=self.toggle_gaps, width=5)
+            self.root, 16, text="On", command=self.toggle_gaps, width=5)
         self.button_gaps_btn.grid(row=2, column=4)
 
         # Highlights:
         self.highlight_color_btn = Window.Button(
-            self.root, 16, text="COLOR", command=lambda x="color": self.change_highlight(x), width=5)
+            self.root, 16, text="Color", command=lambda x="color": self.change_highlight(x), width=5)
         self.highlight_dot_btn = Window.Button(
-            self.root, 16, text="DOT", command=lambda x="dot": self.change_highlight(x), width=5)
+            self.root, 16, text="Dot", command=lambda x="dot": self.change_highlight(x), width=5)
         self.highlight_none_btn = Window.Button(
-            self.root, 16, text="NONE", command=lambda x="none": self.change_highlight(x), width=5)
+            self.root, 16, text="None", command=lambda x="none": self.change_highlight(x), width=5)
         self.highlight_color_btn.grid(row=3, column=3)
         self.highlight_dot_btn.grid(row=3, column=4)
         self.highlight_none_btn.grid(row=3, column=5)
 
         # Difficulty presets:
         self.difficulty_easy_btn = tk.Button(
-            self.root, font=("IBM Plex Sans", 16), relief="flat", text="EASY",
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="Easy",
             command=lambda x=5: self.change_difficulty(x, True), width=5, fg="#33d17a", bg="#2b2b2b", highlightbackground="#33d17a")
         self.difficulty_normal_btn = tk.Button(
-            self.root, font=("IBM Plex Sans", 16), relief="flat", text="NORMAL",
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="Normal",
             command=lambda x=10: self.change_difficulty(x, True), width=5, fg="#f6d32d", bg="#2b2b2b", highlightbackground="#f6d32d")
         self.difficulty_hard_btn = tk.Button(
-            self.root, font=("IBM Plex Sans", 16), relief="flat", text="HARD",
+            self.root, font=("IBM Plex Sans", 16), relief="flat", text="Hard",
             command=lambda x=20: self.change_difficulty(x, True), width=5, fg="#e01b24", bg="#2b2b2b", highlightbackground="#e01b24")
         self.difficulty_easy_btn.grid(row=4, column=3)
         self.difficulty_normal_btn.grid(row=4, column=4)
@@ -605,15 +605,15 @@ class SettingsWindow(Window):
     def set_outlines(self, value):
         if (value == False):
             self.button_outlines_btn.configure(
-                bg="#2b2b2b", fg="#ffffff", text="OFF")
+                bg="#2b2b2b", fg="#ffffff", text="Off")
         else:
             self.button_outlines_btn.configure(
-                bg="#ffffff", fg="#2b2b2b", text="ON")
+                bg="#ffffff", fg="#2b2b2b", text="On")
         self.data.button_outlines = value
 
     def toggle_outlines(self):
         # Toggle the outlines setting.
-        if (self.button_outlines_btn["text"] == "ON"):
+        if (self.button_outlines_btn["text"] == "On"):
             # Currently on, turn it off.
             self.set_outlines(False)
         else:
@@ -623,15 +623,15 @@ class SettingsWindow(Window):
     def set_gaps(self, value):
         if (value == False):
             self.button_gaps_btn.configure(
-                bg="#2b2b2b", fg="#ffffff", text="OFF")
+                bg="#2b2b2b", fg="#ffffff", text="Off")
         else:
             self.button_gaps_btn.configure(
-                bg="#ffffff", fg="#2b2b2b", text="ON")
+                bg="#ffffff", fg="#2b2b2b", text="On")
         self.data.button_gaps = value
 
     def toggle_gaps(self):
         # Toggle the gaps setting.
-        if (self.button_gaps_btn["text"] == "ON"):
+        if (self.button_gaps_btn["text"] == "On"):
             # Currently on, turn it off.
             self.set_gaps(False)
         else:
