@@ -305,7 +305,7 @@ class GameWindow(Window):
         while original_color_ok is False:
             # Set loading message.
             self.help_label.configure(
-                text=f"Loading (000/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
+                text=f"Loading...\nColors (1/2)", bg="#ffffff", fg="#2b2b2b")
 
             # Reset the frame, clearing the existing buttons:
             self.frame = tk.Frame(self.root, bg="#2b2b2b")
@@ -320,6 +320,9 @@ class GameWindow(Window):
                 random.randint(0x00, 0xff), random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
             # Convert it to a string for use with Tk.
             original_color_str = f"#{original_color[0]:02X}{original_color[1]:02X}{original_color[2]:02X}"
+
+            self.help_label.configure(
+                text=f"Loading...\nColors (2/2)")
 
             # Generate a color.
             while different_color_ok is False:
@@ -362,6 +365,9 @@ class GameWindow(Window):
                 different_color_ok = True
                 break
 
+        self.help_label.configure(
+            text=f"Loading...(2/4)\nSetting up")
+
         # Choose which button will be incorrect.
         self.diff_btn_row = random.randint(0, level-1)
         self.diff_btn_col = random.randint(0, level-1)
@@ -374,6 +380,9 @@ class GameWindow(Window):
         # Check settings for creating buttons.
         padding = 1 if data.button_gaps == True else 0
         outlines = 1 if data.button_outlines == True else 0
+
+        self.help_label.configure(
+            text=f"Loading...\nButtons (000/{level**2:03})")
 
         # Generate the buttons:
         for row in range(0, level):
@@ -410,8 +419,11 @@ class GameWindow(Window):
 
                 # Update the progress indicator.
                 self.help_label.configure(
-                    text=f"Loading ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
+                    text=f"Loading...\nButtons ({(row*level)+col:03}/{level**2:03})", bg="#ffffff", fg="#2b2b2b")
                 self.help_label.update()
+
+        self.help_label.configure(
+            text=f"Loading...\nFinishing")
 
         self.busy = False
 
