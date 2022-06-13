@@ -716,7 +716,7 @@ class SettingsWindow(Window):
 
         try:
             # Check for bounds
-            if (int(value) < 2 or int(value) > 50):
+            if (int(value) < 1 or int(value) > 50):
                 valid = False
 
         except ValueError:
