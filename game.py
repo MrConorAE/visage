@@ -230,7 +230,7 @@ class GameWindow(Window):
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
         # Lives counter.
-        self.lives = round(5 / self.data.difficulty)
+        self.lives = round(3 / self.data.difficulty)
 
         if (self.lives > 10):
             self.lives = 10
@@ -512,7 +512,7 @@ class SettingsWindow(Window):
 
         # Create the setting labels.
         label_text = ["Button outlines:", "Gaps between buttons:",
-                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value (1-100):"]
+                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value (1-50):"]
         for t in range(len(label_text)):
             label = tk.Label(
                 self.root, text=label_text[t], font=("IBM Plex Sans", 16), bg="#2b2b2b", fg="#ffffff", justify="left")
@@ -675,7 +675,7 @@ class SettingsWindow(Window):
     def validate_difficulty(self, value):
         # Validate the entered difficulty (float) value.
         # Ensure that it is not:
-        # - less than 0.2 or greater than 10.0
+        # - less than 0.2 or greater than 5.0
         # - or a non-float (empty, text, etc.)
         # If successful, will update the difficulty and change the buttons accordingly.
         # if unsuccessful, will disable the Save & Exit button and change the outline of the spinbox
@@ -690,7 +690,7 @@ class SettingsWindow(Window):
 
         try:
             # Check for bounds
-            if (int(value) < 2 or int(value) > 100):
+            if (int(value) < 2 or int(value) > 50):
                 valid = False
 
         except ValueError:
