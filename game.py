@@ -317,13 +317,13 @@ class GameWindow(Window):
             self.help_label.configure(
                 text=f"Loading...\nColors (1/2)", bg="#ffffff", fg="#2b2b2b")
 
-            # Reset the frame, clearing the existing buttons:
+            # Reset the frame, clearing the existing buttons.
+            # First, destroy the old frame (and all the buttons in it):
+            self.frame.destroy()
+            # Then, create a new frame to replace it:
             self.frame = tk.Frame(self.root, bg="#2b2b2b")
             self.frame.grid(row=0, column=0, columnspan=3)
             self.root.update()
-
-            # Calculate the size the buttons should be:
-            size = round(100 / level)
 
             # Generate the "correct" color.
             original_color = [
@@ -420,7 +420,7 @@ class GameWindow(Window):
 
                 # Create the button.
                 button = tk.Button(self.frame, bg=color, fg=color, highlightthickness=outlines, activebackground=highlight_bg, activeforeground=highlight_fg,
-                                   relief="flat", text="●", font=("IBM Plex Sans", round(100/level)), command=lambda x=row, y=col: self.check_color(x, y), width=size, height=size)
+                                   relief="flat", text="●", font=("IBM Plex Sans", round(100/level)), command=lambda x=row, y=col: self.check_color(x, y), width=100, height=100)
 
                 button.grid(row=row, column=col, padx=padding, pady=padding)
 
