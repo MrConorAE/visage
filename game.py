@@ -538,7 +538,7 @@ class SettingsWindow(Window):
 
         # Create the setting labels.
         label_text = ["Button outlines:", "Gaps between buttons:",
-                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value (1-50):"]
+                      "Hover highlight type:", "Game difficulty preset:", "...or set a custom value (2-50):"]
         for t in range(len(label_text)):
             label = tk.Label(
                 self.root, text=label_text[t], font=("IBM Plex Sans", 16), bg="#2b2b2b", fg="#ffffff", justify="left")
@@ -582,7 +582,7 @@ class SettingsWindow(Window):
 
         # Difficulty spinbox:
         self.difficulty_spinbox = tk.Spinbox(
-            self.root, font=("IBM Plex Sans", 16), relief="flat", from_=0, to=100, increment=1, width=5, fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff", buttonbackground="#2b2b2b", validate="key")
+            self.root, font=("IBM Plex Sans", 16), relief="flat", from_=2, to=50, increment=1, width=5, fg="#ffffff", bg="#2b2b2b", highlightbackground="#ffffff", buttonbackground="#2b2b2b", validate="key")
         self.difficulty_spinbox["validatecommand"] = (
             self.root.register(self.validate_difficulty), '%P')
         self.difficulty_spinbox.grid(row=5, column=3, columnspan=3)
@@ -716,7 +716,7 @@ class SettingsWindow(Window):
 
         try:
             # Check for bounds
-            if (int(value) < 1 or int(value) > 50):
+            if (int(value) < 2 or int(value) > 50):
                 valid = False
 
         except ValueError:
