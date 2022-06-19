@@ -1,4 +1,4 @@
-###  Visage ###
+# Visage
 # a color game by Conor Eager
 # Developed for 91906 Complex Programming Techniques, for Level 3 Computer Science.
 
@@ -21,10 +21,12 @@ import os.path
 
 
 class Application:
-    # This class is the main class for the game.
-    # It calls other classes for the main menu, game, settings, and highscore screens.
+    """This class contains the entire application. It calls the main menu, and handles initial loading of data.
+    """
+
     def __init__(self):
-        # Initialise game state, including loading data.
+        """Initialise game state, including loading data.
+        """
         Application.data = Data()
         Application.data.load()
 
@@ -33,9 +35,11 @@ class Application:
 
 
 class Data:
-    # This class is responsible for all the data stored for the game.
-    # It contains methods for saving and loading data to/from persistent storage,
-    # and for modifying and reading data (e.g. settings, highscores).
+    """This class is responsible for all the data stored for the game.
+    It contains methods for saving and loading data to/from persistent storage,
+    and for modifying and reading data (e.g. settings, highscores).
+    """
+
     def __init__(self):
         # Set the defaults.
         self.button_outlines = False
@@ -45,10 +49,17 @@ class Data:
         self.highscore = 3
 
     def resolve_save_location(self):
+        """Resolve the location of the user's save file.
+        This is their home directory plus the name of the save file ("visage_save.data").
+
+        Returns:
+            String: The absolute path to the save file.
+        """
         return os.path.join(os.path.expanduser("~"), "visage_save.data")
 
     def save(self):
-        # Save the game state to persistent storage.
+        """Save the game state to persistent storage.
+        """
 
         # First, get the location to save to. This is the user's home directory.
         # From https://stackoverflow.com/a/4028943/7311875
@@ -65,7 +76,8 @@ class Data:
                 "Error", f"Could not save Visage data at\n'{location}'.\nYour progress and settings have not been saved. Please check that you have permission to write to this directory/file.\nIf you would like to try to save again, press 'Try Again'. To exit without saving your data, press 'Exit Without Saving'.\n\nMore details on the error can be seen below:\n{e}", 1000, 600, "Exit Without Saving", second_button={'text': 'Try Again', 'command': self.save})
 
     def load(self):
-        # Load the game state from persistent storage.
+        """Load the game state from persistent storage.
+        """
 
         # First, get the location to load from. This is the user's home directory.
         # From https://stackoverflow.com/a/4028943/7311875
@@ -87,8 +99,10 @@ class Data:
 
 
 class Window:
-    # This class contains code for a basic window.
-    # Any elements or configuration that should be applied across all windows is done here.
+    """This class contains code for a basic window.
+    Any elements or configuration that should be applied across all windows is done here.
+    """
+
     def __init__(self, title, width, height):
         # Create the window.
         self.root = tk.Tk()
@@ -105,13 +119,38 @@ class Window:
         self.font = ("IBM Plex Sans", 20)
 
     def Button(parent, fontsize=20, **kwargs):
-        # Create a button with the default options.
+        """Generate a new tk.Button with some sensible defaults set. This ensures that all buttons are consistent
+        across the game UI, and eliminates the need to copy/paste arguments all over the place.
+
+        Args:
+            parent (tk.<container>): The container that the new button will be created as a child of.
+            fontsize (int, optional): The font size of the text on the button. Defaults to 20.
+
+        Returns:
+            tk.Button: The newly generated button.
+        """
         return tk.Button(parent, font=("IBM Plex Sans", fontsize), bg="#2b2b2b", fg="#ffffff", relief="flat", **kwargs)
 
 
 class MessageWindow(Window):
-    # This class contains code for a single-message window to inform the user.
+    """This class contains code for a single-message window to inform the user of
+    an important notice (e.g. save file not found).
+
+    Inherits Window.
+    """
+
     def __init__(self, title, text, width, height, buttontext="OK", second_button={}):
+        """Creates a new MessageWindow.
+
+        Args:
+            title (str): The title of the window (shown in the window decorations).
+            text (str): The main body text of the window.
+            width (int): The width, in pixels, of the message window.
+            height (int): The height, in pixels, of the message window.
+            buttontext (str, optional): The text to show on the button in the window. Defaults to "OK".
+            second_button (dict, optional): An optional second button to show, used for cases where a
+            second button is required (e.g. "Try Again"). Defaults to {} (no button).
+        """
         Window.__init__(self, title, width, height)
 
         label = tk.Label(self.root, text=text,
@@ -139,10 +178,18 @@ class MessageWindow(Window):
 
 
 class MainMenuWindow(Window):
-    # This class contains the main menu.
-    # It can call back to the Application class to start the game.
+    """This class contains the main menu.
+    It can call back to the Application class to start the game.
+
+    Inherits Window.
+    """
+
     def __init__(self, application):
-        # Open the main menu window.
+        """Open the main menu window.
+
+        Args:
+            application (Application): The global application instance, containing references to Data.
+        """
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Main Menu", 500, 600)
 
@@ -197,7 +244,8 @@ class MainMenuWindow(Window):
         self.root.mainloop()
 
     def play(self):
-        # Start the game.
+        """Start the game.
+        """
         self.root.destroy()
         game = GameWindow(self.application.data)
 
@@ -205,7 +253,8 @@ class MainMenuWindow(Window):
         self.__init__(self.application)
 
     def highscores(self):
-        # Open the highscores window.
+        """Open the highscores window.
+        """
         self.root.destroy()
         scorewindow = ScoreWindow(self.application.data)
 
@@ -213,7 +262,8 @@ class MainMenuWindow(Window):
         self.__init__(self.application)
 
     def settings(self):
-        # Open the settings window.
+        """Open the settings window.
+        """
         self.root.destroy()
         settings = SettingsWindow(self.application.data)
 
@@ -221,16 +271,24 @@ class MainMenuWindow(Window):
         self.__init__(self.application)
 
     def quit(self):
-        # Quit the game.
+        """Quit the game, saving data in the process.
+        """
         self.root.destroy()
         self.application.data.save()
 
 
 class GameWindow(Window):
-    # This class is the game itself.
-    # It contains the game loop, and can call back to Application or Data for the game state.
+    """This class contains the game window itself.
+
+    Inherits Window.
+    """
+
     def __init__(self, data):
-        # Open the main window.
+        """Open the game window.
+
+        Args:
+            data (Data): A reference to the global Data object, to get settings & highscores.
+        """
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Play", 500, 500)
 
@@ -303,7 +361,13 @@ class GameWindow(Window):
         self.root.mainloop()
 
     def generate_buttons(self, level, data):
-        # Generate a new set of color buttons according to difficulty.
+        """Generate a new set of buttons according to the current level,
+        difficulty, and settings.
+
+        Args:
+            level (int): The current game level.
+            data (Data): A reference to the global Data object, containing settings & highscores.
+        """
         self.busy = True
 
         original_color_ok = False
@@ -388,8 +452,8 @@ class GameWindow(Window):
             self.frame.columnconfigure(i, weight=1)
 
         # Check settings for creating buttons.
-        padding = 1 if data.button_gaps == True else 0
-        outlines = 1 if data.button_outlines == True else 0
+        padding = 1 if data.button_gaps is True else 0
+        outlines = 1 if data.button_outlines is True else 0
 
         self.help_label.configure(
             text=f"Loading...\nButtons (000/{level**2:03})")
@@ -441,7 +505,8 @@ class GameWindow(Window):
             text=f"{'❤'*self.lives}\nDifficulty: {self.difficulty_str}", bg="#2b2b2b", fg="#ffffff")
 
     def quit(self):
-        # Quit the game.
+        """Quit the game, saving the highscore if necessary.
+        """
         # Is this a new highscore?
         if ((self.level * self.data.difficulty) >= self.data.highscore):
             self.data.highscore = self.level * self.data.difficulty
@@ -449,6 +514,9 @@ class GameWindow(Window):
         self.data.save()
 
     def game_over(self):
+        """Game over!
+        Show the game over screen.
+        """
         # Game over! Show the user's score, and save it.
         self.frame = tk.Frame(self.root, bg="#2b2b2b")
         self.frame.grid(row=0, column=0, columnspan=3)
@@ -467,7 +535,13 @@ class GameWindow(Window):
         next_steps_text.grid(row=2, column=0)
 
     def check_color(self, row, col):
-        if (self.busy == True):
+        """Check the clicked button, if it's the correct button.
+
+        Args:
+            row (int): The row number of the clicked button.
+            col (int): The column number of the clicked button.
+        """
+        if (self.busy is True):
             # We're currently busy generating buttons.
             # Don't process click.
             return
@@ -514,10 +588,17 @@ class GameWindow(Window):
 
 
 class SettingsWindow(Window):
-    # This class contains the settings window.
-    # It can call back to Application or Data to change the game settings.
+    """This class contains the Settings window.
+
+    Inherits Window.
+    """
+
     def __init__(self, data):
-        # Open the settings window.
+        """Open the Settings window.
+
+        Args:
+            data (Data): A reference to the global Data object, which contains settings & highscores.
+        """
         # Perform initialisation using the Window parent class.
         Window.__init__(self, "Options", 700, 500)
 
@@ -604,16 +685,25 @@ class SettingsWindow(Window):
         self.root.mainloop()
 
     def save_and_exit(self):
+        """Save and exit the settings window.
+        """
         # Validate, save, and exit the settings window.
         if (self.exit["state"] == "disabled"):
             # An invalid setting. Don't exit.
             pass
         else:
+            # Close the window.
             self.root.destroy()
+            # Save data.
             self.data.save()
 
     def set_outlines(self, value):
-        if (value == False):
+        """Set the button outlines setting.
+
+        Args:
+            value (bool): The value to set the option to.
+        """
+        if (value is False):
             self.button_outlines_btn.configure(
                 bg="#2b2b2b", fg="#ffffff", text="Off")
         else:
@@ -622,6 +712,8 @@ class SettingsWindow(Window):
         self.data.button_outlines = value
 
     def toggle_outlines(self):
+        """Toggle the button outlines setting.
+        """
         # Toggle the outlines setting.
         if (self.button_outlines_btn["text"] == "On"):
             # Currently on, turn it off.
@@ -631,7 +723,12 @@ class SettingsWindow(Window):
             self.set_outlines(True)
 
     def set_gaps(self, value):
-        if (value == False):
+        """Set the button gaps setting.
+
+        Args:
+            value (bool): The value to set the option to.
+        """
+        if (value is False):
             self.button_gaps_btn.configure(
                 bg="#2b2b2b", fg="#ffffff", text="Off")
         else:
@@ -640,6 +737,8 @@ class SettingsWindow(Window):
         self.data.button_gaps = value
 
     def toggle_gaps(self):
+        """Toggle the button gaps setting.
+        """
         # Toggle the gaps setting.
         if (self.button_gaps_btn["text"] == "On"):
             # Currently on, turn it off.
@@ -649,6 +748,11 @@ class SettingsWindow(Window):
             self.set_gaps(True)
 
     def change_highlight(self, mode):
+        """Change the button highlight setting.
+
+        Args:
+            mode (str): The mode to set the setting to.
+        """
         # Change the highlights setting.
         if (mode == "color"):
             self.highlight_color_btn.configure(bg="#ffffff", fg="#2b2b2b")
@@ -666,6 +770,12 @@ class SettingsWindow(Window):
         self.data.highlight = mode
 
     def change_difficulty(self, difficulty, overwrite=False):
+        """Change the difficulty setting.
+
+        Args:
+            difficulty (int): The difficulty to set the setting to.
+            overwrite (bool, optional): Whether to overwrite the spinbox for the new value. Only set to True if triggered by clicking a preset. Defaults to False.
+        """
         # Change the difficulty setting.
 
         # Convert difficulty to an integer.
@@ -699,13 +809,21 @@ class SettingsWindow(Window):
         self.data.difficulty = float(int(difficulty) / 10)
 
     def validate_difficulty(self, value):
-        # Validate the entered difficulty (float) value.
-        # Ensure that it is not:
-        # - less than 0.2 or greater than 5.0
-        # - or a non-float (empty, text, etc.)
-        # If successful, will update the difficulty and change the buttons accordingly.
-        # if unsuccessful, will disable the Save & Exit button and change the outline of the spinbox
-        # to indicate the error.
+        """Validate the entered difficulty value.
+        Ensure that it is not:
+        - less than 2 or greater than 50
+        - or a non-number (empty, text, etc.)
+        If successful, will update the difficulty and change the buttons accordingly.
+        if unsuccessful, will disable the Save & Exit button and change the outline of the spinbox
+        to indicate the error.
+
+        Args:
+            value (Any): The value to check.
+
+        Returns:
+            True: This will be always True, to allow the input to the box. 
+            Returning False will cancel the input, which is confusing to the end user.
+        """
 
         # Set our valid state, default to valid.
         valid = True
@@ -741,9 +859,19 @@ class SettingsWindow(Window):
 
 
 class ScoreWindow(Window):
+    """This class contains the score window which shows highscores.
+
+    Inherits Window.
+    """
     # This class contains the highscore window, viewed when clicking "Highscores" on the main menu.
     # It gathers its' data from the Data class.
+
     def __init__(self, data):
+        """Open the Score window.
+
+        Args:
+            data (Data): A reference to the global Data object, containing settings & scores.
+        """
         Window.__init__(self, "High Score", 500, 500)
 
         self.data = data
@@ -782,10 +910,16 @@ class ScoreWindow(Window):
         self.root.mainloop()
 
     def back(self):
+        """Close the score window.
+        """
         # Close this window.
         self.root.destroy()
 
     def reset(self):
+        """Process a click on the reset button.
+        If this is the first click, "arm" the button, but don't reset.
+        If this is the second click (the button is already "armed"), reset the highscore.
+        """
         if (self.reset_clicks == 0):
             # First click. Change button to "armed" state.
             self.reset.configure(
@@ -799,6 +933,7 @@ class ScoreWindow(Window):
                 text=f"Your highscore:\n{self.data.highscore}")
             self.reset.configure(
                 text="Highscore Reset", bg="#2b2b2b", fg="#424242", highlightbackground="#424242", state="disabled")
+
 
     # RUNNING
 if __name__ == "__main__":
